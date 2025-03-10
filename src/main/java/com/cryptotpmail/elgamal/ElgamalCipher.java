@@ -7,20 +7,19 @@ package com.cryptotpmail.elgamal;
 
 import it.unisa.dia.gas.jpbc.Element;
 
-
 /**
  *
  * @author imino
  */
 public class ElgamalCipher {
-   private Element u;
+    private Element u;
     private Element v;
     private byte[] AESciphertext;
 
     public ElgamalCipher(Element u, Element v, byte[] AESciphertext) {
         this.u = u;
         this.v = v;
-        this.AESciphertext=AESciphertext;
+        this.AESciphertext = AESciphertext;
     }
 
     public Element getU() {
@@ -34,6 +33,9 @@ public class ElgamalCipher {
     public byte[] getAESciphertext() {
         return AESciphertext;
     }
-    
-    
+
+    public String toString() {
+        return "U:" + this.u.toString() + " V:" + this.v.toString() + " Cipher:" + new String(this.AESciphertext);
+    }
+
 }

@@ -35,7 +35,7 @@ public class IBEBasicIdent {
   }
     
     public static KeyPair keygen(Pairing pairing,Element msk, String id) throws NoSuchAlgorithmException{
-        
+        System.out.println(id);
         byte [] bytes=id.getBytes(); // représentation de l'id sous format binaire
         
         Element Q_id=pairing.getG1().newElementFromHash(bytes, 0, bytes.length); //H_1(id)
