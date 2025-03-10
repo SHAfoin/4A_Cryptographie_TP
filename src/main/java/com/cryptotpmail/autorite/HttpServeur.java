@@ -29,8 +29,8 @@ public class HttpServeur {
         try {
              // InetSocketAddress s = new InetSocketAddress("localhost", 8080);
              System.out.println("my address:"+InetAddress.getLocalHost());
-            //InetSocketAddress s = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
-             InetSocketAddress s = new InetSocketAddress("localhost", 8080);
+            InetSocketAddress s = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
+            // InetSocketAddress s = new InetSocketAddress("localhost", 8080);
               
               
 /*  135 */               HttpServer server = HttpServer.create(s, 1000);
