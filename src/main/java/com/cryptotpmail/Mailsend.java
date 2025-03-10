@@ -14,7 +14,7 @@ public class Mailsend {
     
     public static void main(String[] args) {
         // Recipient's email ID needs to be mentioned.
-        String to = "menu.thomas1@gmail.com";
+        String to = "tp.crypto.mail89@gmail.com";
   
         // Sender's email ID needs to be mentioned
         String from = "tp.crypto.mail89@gmail.com";
