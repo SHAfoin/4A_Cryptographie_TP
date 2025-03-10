@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication4;
+package com.cryptotpmail.client;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ public class Client {
         
         
         try {
-                  URL url = new URL("http://192.168.1.50:8080/service");
+                  URL url = new URL("http://localhost:8080/service");
             // URL url = new URL("https://www.google.com");
            
               URLConnection urlConn = url.openConnection();
