@@ -153,7 +153,7 @@ public class EXschnorsig {
         // 5 : l'autorité génère la clé secrète et le transmet au serveur mail via elgamal
         // 6 : le serveur mail à sa clé privée
        
-        Pairing pairing = PairingFactory.getPairing("curveParamsd159"); //chargement des paramètres de la courbe elliptique  
+        Pairing pairing = PairingFactory.getPairing("curves/curveParamsd159"); //chargement des paramètres de la courbe elliptique  
                                                                         //(replacer "curveParamsd159" par un chemin vers le fichier de configuration de la courbe)
         Element generator=pairing.getG1().newRandomElement(); //génerateur
    
