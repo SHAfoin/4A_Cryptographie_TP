@@ -148,14 +148,14 @@ public class EXschnorsig {
         // elgamal
         // 6 : le serveur mail à sa clé privée
        
-        Pairing pairing = PairingFactory.getPairing("curves/curveParamsd159"); //chargement des paramètres de la courbe elliptique  
+        Pairing pairing = PairingFactory.getPairing("curves/d159.properties"); //chargement des paramètres de la courbe elliptique  
                                                                         //(replacer "curveParamsd159" par un chemin vers le fichier de configuration de la courbe)
         Element generator=pairing.getG1().newRandomElement(); //génerateur
    
         PairKeys pairkeys=keygen(pairing, generator); //keygen
      
         //test chiffrement, déchiffrement, signature et vérification
-        fileEncryption_decryptiondemo("C:\\Users\\imino\\OneDrive\\Bureau\\filetoencrypt.txt", pairing, generator, pairkeys);
+        fileEncryption_decryptiondemo("D:\\INSA\\4A ICY\\Cryptographie Avancée\\TP\\cryptotpmail\\src\\main\\java\\com\\cryptotpmail\\elgamal\\filetoencrypt.txt", pairing, generator, pairkeys);
         
     }
 }

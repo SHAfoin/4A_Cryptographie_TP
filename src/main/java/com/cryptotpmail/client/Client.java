@@ -39,7 +39,7 @@ public class Client {
             Pairing pairing = PairingFactory.getPairing("curves/d159.properties");
 
 
-                  URL url = new URL("http://192.168.27.122:8080/service");
+                  URL url = new URL("http://localhost:8080/service");
             // URL url = new URL("https://www.google.com");
            
               URLConnection urlConn = url.openConnection();
