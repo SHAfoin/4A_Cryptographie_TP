@@ -82,10 +82,10 @@ public class Client {
             String password="azerty";
             digestSHA256.update(password.getBytes());
             byte[] hash = digestSHA256.digest(); // Calcul du hash
-            byte[] hashBase64 = Base64.getEncoder().encode(hash);
-            
-            byte[] generatorElGamalBase64 = Base64.getEncoder().encode(generatorElGamal.toBytes());
-            byte[] pubKeyElGamalBase64 = Base64.getEncoder().encode(pairkeysElGamal.getPubkey().toBytes());
+            byte[] hashBase64 = encoder.encode(hash);
+            System.out.println("hash: "+hashBase64.toString());
+            byte[] generatorElGamalBase64 = encoder.encode(generatorElGamal.toBytes());
+            byte[] pubKeyElGamalBase64 = encoder.encode(pairkeysElGamal.getPubkey().toBytes());
 
             out.write(id.getBytes());
             out.write(",".getBytes());
@@ -97,38 +97,32 @@ public class Client {
            
             
             InputStream  dis = urlConn.getInputStream();
-            byte[] b=new byte[Integer.parseInt(urlConn.getHeaderField("Content-length"))];
-            dis.read(b);
-            String msg = new String(b);
+            int contentLength = urlConn.getContentLength();
+            byte[] b=new byte[contentLength];
+            int bytesRead = 0;
+            while (bytesRead < contentLength) {
+                int result = dis.read(b, bytesRead, contentLength - bytesRead);
+                if (result == -1) break;
+                bytesRead += result;
+            }
+            String content = new String(b);
+            System.out.println(content);
 
-        //    System.out.println("message reçu : " + msg);
-        //    String[] msgParts = msg.split(",");
-
-        boolean isAuth = Boolean.parseBoolean(msg.split(",")[0]);
+        boolean isAuth = Boolean.parseBoolean(content.split(",")[0]);
         if (isAuth) {
             System.out.println("Authentification réussie");
 
-
-            Element ibeP = pairingIBE.getG1().newElementFromBytes(decoder.decode(msg.split(",")[1]));
-            Element ibePpub = pairingIBE.getG1().newElementFromBytes(decoder.decode(msg.split(",")[2]));
-            Element u = pairingElGamal.getG1().newElementFromBytes(decoder.decode(msg.split(",")[3]));
-            Element v = pairingElGamal.getG1().newElementFromBytes(decoder.decode(msg.split(",")[4]));
-            byte[] AESciphertext = decoder.decode(msg.split(",")[5]);
+            Element ibeP = pairingIBE.getG1().newElementFromBytes(decoder.decode(content.split(",")[1]));
+            Element ibePpub = pairingIBE.getG1().newElementFromBytes(decoder.decode(content.split(",")[2]));
+            Element u = pairingElGamal.getG1().newElementFromBytes(decoder.decode(content.split(",")[3]));
+            Element v = pairingElGamal.getG1().newElementFromBytes(decoder.decode(content.split(",")[4]));
+            byte[] AESciphertext = decoder.decode(content.split(",")[5]);
 
             ElgamalCipher cypherElgamal = new ElgamalCipher(u, v, AESciphertext);
 
-            
-            // PROBLEME DE CONVERSION ATTENTION : remplacer la sortie de elgamaldec en byte[] ?? 
             String skBytesBase64_retrieved = EXschnorsig.elGamaldec(pairingElGamal, generatorElGamal, cypherElgamal, pairkeysElGamal.getSecretkey());
             byte[] skBytes_retrieved = decoder.decode(skBytesBase64_retrieved);
-
-            System.out.println("Secret key retrieved : " + skBytesBase64_retrieved);
-            System.out.println("Size : " + skBytesBase64_retrieved.getBytes().length);
-
             Element sk_retrieved = pairingIBE.getG1().newElementFromBytes(skBytes_retrieved);
-
-            System.out.println("Secret key retrieved : " + new String(sk_retrieved.toBytes()));
-            System.out.println("Size : " + sk_retrieved.toBytes().length);
 
             String filepath = "D:\\INSA\\4A ICY\\Cryptographie Avancée\\TP\\cryptotpmail\\src\\main\\java\\com\\cryptotpmail\\elgamal\\filetoencrypt.txt"; // chemin du fichier à chiffrer
             
@@ -138,6 +132,8 @@ public class Client {
             // DECRYPTION FICHIER IBE
             decrypt_file_IBE(pairingIBE, ibeP, ibePpub, filepath.substring(filepath.lastIndexOf("\\")+1), sk_retrieved, ibecipher);
 
+        } else {
+            System.out.println("Authentification échouée.");
         }        
           
        

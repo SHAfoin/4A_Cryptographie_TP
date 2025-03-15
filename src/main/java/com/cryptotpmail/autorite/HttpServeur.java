@@ -43,6 +43,11 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import java.util.HashMap; // import the HashMap class
+
+
+
+
 /**
  *
  * @author imino
@@ -50,6 +55,8 @@ import javax.crypto.NoSuchPaddingException;
 public class HttpServeur {
 
     public static void main(String[] args) {
+
+        HashMap<String, String> users = new HashMap<String, String>();
 
         try {
 
@@ -76,14 +83,26 @@ public class HttpServeur {
                         byte[] bytes = new byte[Integer.parseInt(he.getRequestHeaders().getFirst("Content-length"))];
                         he.getRequestBody().read(bytes);
                         String content = new String(bytes);
-                        // System.out.println(content);
 
                         // Récupérer l'ID
                         String id = content.split(",")[0];
                         // Récupérer le password
                         String password = content.split(",")[1];
 
-                        // TODO : traiter le password
+                        if (users.containsKey(id)) {
+                            System.out.println(users.get(id));
+                            System.out.println(password);
+                            System.out.println(!users.get(id).equals(password) );
+                            if (!users.get(id).equals(password)) {
+                                byte[] authentificationKO = "false".getBytes();
+                                he.sendResponseHeaders(200, authentificationKO.length);
+                                OutputStream os = he.getResponseBody();
+                                os.write(authentificationKO);
+                                os.close();
+                            }
+                        } else {
+                            users.put(id, password);
+                        }
                         
                         // Récupérer le générateur par le client
                         Element generatorElGamal = pairingElGamal.getG1().newElementFromBytes(decoder.decode(content.split(",")[2]));
@@ -95,9 +114,6 @@ public class HttpServeur {
                         byte[] skBytes = Kp.getSk().toBytes();
                         byte[] skBytesBase64 = encoder.encode(skBytes);
 
-                        System.out.println("Secret key : " + new String(skBytesBase64));
-                        System.out.println("Size : " + skBytesBase64.length);
-
                         ElgamalCipher cypherElgamal = EXschnorsig.elGamalencr(pairingElGamal, generatorElGamal, skBytesBase64, clientPubKey);
 
                         byte[] authentificationOK = "true".getBytes();
@@ -107,7 +123,7 @@ public class HttpServeur {
                         byte[] vBase64 = Base64.getEncoder().encode(cypherElgamal.getV().toBytes());
                         byte[] cipherBase64 = Base64.getEncoder().encode(cypherElgamal.getAESciphertext());
 
-                        he.sendResponseHeaders(200,authentificationOK.length + ibePBase64.length + ibePpubBase64.length +  uBase64.length + vBase64.length + cipherBase64.length + 5);
+                        he.sendResponseHeaders(200, authentificationOK.length + ibePBase64.length + ibePpubBase64.length +  uBase64.length + vBase64.length + cipherBase64.length + 5);
                         OutputStream os = he.getResponseBody();
                         os.write(authentificationOK);
                         os.write(',');
