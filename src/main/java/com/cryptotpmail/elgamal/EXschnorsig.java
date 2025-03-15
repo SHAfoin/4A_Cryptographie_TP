@@ -14,8 +14,9 @@ import java.io.IOException;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -139,23 +140,27 @@ public class EXschnorsig {
     }
 
     public static void main(String[] args) throws NoSuchAlgorithmException {
-
-        // 1 : le serveur mail envoie son mail (clé publique) à l'autorité
-        // 2 : serveur mail & l'autorité génèrent les pairing
-        // 3 : l'autorité définit le générateur et l'envoie au serveur mail
-        // 4 : mail & autorité génèrent leurs clés
-        // 5 : l'autorité génère la clé secrète et le transmet au serveur mail via
-        // elgamal
-        // 6 : le serveur mail à sa clé privée
-       
-        Pairing pairing = PairingFactory.getPairing("curves/d159.properties"); //chargement des paramètres de la courbe elliptique  
-                                                                        //(replacer "curveParamsd159" par un chemin vers le fichier de configuration de la courbe)
-        Element generator=pairing.getG1().newRandomElement(); //génerateur
+  
+        // Pairing pairing = PairingFactory.getPairing("curves/d159.properties"); //chargement des paramètres de la courbe elliptique  
+        //                                                                 //(replacer "curveParamsd159" par un chemin vers le fichier de configuration de la courbe)
+        // Element generator=pairing.getG1().newRandomElement(); //génerateur
    
-        PairKeys pairkeys=keygen(pairing, generator); //keygen
+        // PairKeys pairkeys=keygen(pairing, generator); //keygen
      
-        //test chiffrement, déchiffrement, signature et vérification
-        fileEncryption_decryptiondemo("D:\\INSA\\4A ICY\\Cryptographie Avancée\\TP\\cryptotpmail\\src\\main\\java\\com\\cryptotpmail\\elgamal\\filetoencrypt.txt", pairing, generator, pairkeys);
+        // //test chiffrement, déchiffrement, signature et vérification
+        // fileEncryption_decryptiondemo("D:\\INSA\\4A ICY\\Cryptographie Avancée\\TP\\cryptotpmail\\src\\main\\java\\com\\cryptotpmail\\elgamal\\filetoencrypt.txt", pairing, generator, pairkeys);
         
+        byte[] key="azerty".getBytes();
+        MessageDigest digest=MessageDigest.getInstance("SHA256");
+        digest.update(key);
+        byte[] hash = digest.digest(); // Calcul du hash
+
+        // Convertir le hash en format hexadécimal pour affichage
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            hexString.append(String.format("%02x", b));
+        }
+
+        System.out.println("Hash SHA-256 : " + hexString.toString());
     }
 }

@@ -53,6 +53,9 @@ public class HttpServeur {
 
         try {
 
+            Encoder encoder = Base64.getEncoder();
+            Decoder decoder = Base64.getDecoder();
+
             // PAIRING DU IBE
             Pairing pairingIBE = PairingFactory.getPairing("curves\\a.properties");
             SettingParameters param = IBEBasicIdent.setup(pairingIBE);
@@ -63,39 +66,29 @@ public class HttpServeur {
 
             System.out.println("my address:" + InetAddress.getLocalHost());
             // InetSocketAddress s = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
-            // InetSocketAddress s = new InetSocketAddress("localhost", 8080);
+            InetSocketAddress s = new InetSocketAddress("localhost", 8080);
 
-            // HttpServer server = HttpServer.create(s, 0);
-            // System.out.println(server.getAddress());
-            // server.createContext("/service", new HttpHandler() {
-            //     public void handle(HttpExchange he) throws IOException {
+            HttpServer server = HttpServer.create(s, 0);
+            System.out.println(server.getAddress());
+            server.createContext("/service", new HttpHandler() {
+                public void handle(HttpExchange he) throws IOException {
                     try {
-                        // byte[] bytes = new byte[Integer.parseInt(he.getRequestHeaders().getFirst("Content-length"))];
-                        // he.getRequestBody().read(bytes);
-                        // String content = new String(bytes);
+                        byte[] bytes = new byte[Integer.parseInt(he.getRequestHeaders().getFirst("Content-length"))];
+                        he.getRequestBody().read(bytes);
+                        String content = new String(bytes);
                         // System.out.println(content);
-                        Encoder encoder = Base64.getEncoder();
-                        Decoder decoder = Base64.getDecoder();
-
-                        // Récupérer le générateur par le client
-                        Element generatorElGamal=pairingElGamal.getG1().newRandomElement(); //génerateur
-                        // Créer mes clés publiques/privées
-                        // Même pas ? j'ai juste besoin de la clé publique du client
-                        PairKeys pairkeysElGamal=EXschnorsig.keygen(pairingElGamal, generatorElGamal); //keygen
 
                         // Récupérer l'ID
-                        String id = "bcd.saltel@gmail.com";
+                        String id = content.split(",")[0];
+                        // Récupérer le password
+                        String password = content.split(",")[1];
 
-                        // String[] elems = content.split(",");
-
-                        // String id = new String(elems[0]);
+                        // TODO : traiter le password
                         
-                        // byte[] genBytes = decoder.decode(elems[1]);
-                        // byte[] pubBytes = decoder.decode(elems[2]);
-
-
-                        // Element generator = pairing.getG1().newElementFromBytes(genBytes);
-                        // Element pubKeys = pairing.getG1().newElementFromBytes(pubBytes);
+                        // Récupérer le générateur par le client
+                        Element generatorElGamal = pairingElGamal.getG1().newElementFromBytes(decoder.decode(content.split(",")[2]));
+                        // Récupérer la clé publique du client
+                        Element clientPubKey = pairingElGamal.getG1().newElementFromBytes(decoder.decode(content.split(",")[3]));
 
                         // GENERATION DES CLES IBE
                         KeyPair Kp = IBEBasicIdent.keygen(pairingIBE, param.getMsk(), id);
@@ -105,45 +98,36 @@ public class HttpServeur {
                         System.out.println("Secret key : " + new String(skBytesBase64));
                         System.out.println("Size : " + skBytesBase64.length);
 
-                        ElgamalCipher cypherElgamal = EXschnorsig.elGamalencr(pairingElGamal, generatorElGamal, skBytesBase64, pairkeysElGamal.getPubkey());
+                        ElgamalCipher cypherElgamal = EXschnorsig.elGamalencr(pairingElGamal, generatorElGamal, skBytesBase64, clientPubKey);
+
+                        byte[] authentificationOK = "true".getBytes();
+                        byte[] ibePBase64 = encoder.encode(param.getP().toBytes());
+                        byte[] ibePpubBase64 = encoder.encode(param.getP_pub().toBytes());
+                        byte[] uBase64 = Base64.getEncoder().encode(cypherElgamal.getU().toBytes());
+                        byte[] vBase64 = Base64.getEncoder().encode(cypherElgamal.getV().toBytes());
+                        byte[] cipherBase64 = Base64.getEncoder().encode(cypherElgamal.getAESciphertext());
+
+                        he.sendResponseHeaders(200,authentificationOK.length + ibePBase64.length + ibePpubBase64.length +  uBase64.length + vBase64.length + cipherBase64.length + 5);
+                        OutputStream os = he.getResponseBody();
+                        os.write(authentificationOK);
+                        os.write(',');
+                        os.write(ibePBase64);
+                        os.write(',');
+                        os.write(ibePpubBase64);
+                        os.write(',');
+                        os.write(uBase64);
+                        os.write(',');
+                        os.write(vBase64);
+                        os.write(',');
+                        os.write(cipherBase64);
+                        os.close();
 
 
-                        // PROBLEME DE CONVERSION ATTENTION : remplacer la sortie de elgamaldec en byte[] ?? 
-                        String skBytesBase64_retrieved = EXschnorsig.elGamaldec(pairingElGamal, generatorElGamal, cypherElgamal, pairkeysElGamal.getSecretkey());
-                        byte[] skBytes_retrieved = decoder.decode(skBytesBase64_retrieved);
 
-                        System.out.println("Secret key retrieved : " + skBytesBase64_retrieved);
-                        System.out.println("Size : " + skBytesBase64_retrieved.getBytes().length);
-
-                        Element sk_retrieved = pairingIBE.getG1().newElementFromBytes(skBytes_retrieved);
-
-                        System.out.println("Secret key retrieved : " + new String(sk_retrieved.toBytes()));
-                        System.out.println("Size : " + sk_retrieved.toBytes().length);
-
-                        String filepath = "D:\\INSA\\4A ICY\\Cryptographie Avancée\\TP\\cryptotpmail\\src\\main\\java\\com\\cryptotpmail\\elgamal\\filetoencrypt.txt"; // chemin du fichier à chiffrer
-                        
-                        // ENCRYPTION IBE
-                        IBEcipher ibecipher = encrypt_file_IBE(pairingIBE, param.getP(), param.getP_pub(), filepath, Kp.getPk());
-
-                        // DECRYPTION FICHIER IBE
-                        decrypt_file_IBE(pairingIBE, param.getP(), param.getP_pub(), filepath.substring(filepath.lastIndexOf("\\")+1), sk_retrieved, ibecipher);
-
-                        // ElgamalCipher c = EXschnorsig.elGamalencr(pairing, generator, Kp.getSk().toBytes(), pubKeys);
-                        // System.out.println(Kp.getSk());
-                        // byte[] uBase64 = Base64.getEncoder().encode(c.getU().toBytes());
-                        // byte[] vBase64 = Base64.getEncoder().encode(c.getV().toBytes());
-                        // byte[] cipherBase64 = Base64.getEncoder().encode(c.getAESciphertext());
                         // System.out.println(new String(cipherBase64));
-                        // he.sendResponseHeaders(200, uBase64.length + vBase64.length + cipherBase64.length + 2);
-                        // OutputStream os = he.getResponseBody();
-                        // os.write(uBase64);
-                        // os.write(',');
-                        // os.write(vBase64);
-                        // os.write(',');
-                        // os.write(cipherBase64);
-                        // os.close();
+                        
 
-                    } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException ex) {
+                    } catch (NoSuchAlgorithmException ex) {
                         Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
                         // } catch (NoSuchPaddingException ex) {
                         // Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
@@ -155,49 +139,15 @@ public class HttpServeur {
                         // Logger.getLogger(TestIBEAES.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 
-                // }});
+                }});
 
-            // server.start();
+            server.start();
         } catch (IOException ex) {
             Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
 
-    public static IBEcipher encrypt_file_IBE(Pairing pairingIBE, Element param_p,Element param_p_pub, byte[] filebytes, String pk) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
-        return IBEBasicIdent.IBEencryption(pairingIBE, param_p, param_p_pub, filebytes, pk); // chiffrement BasicID-IBE/AES
-    }
-
-    public static IBEcipher encrypt_file_IBE(Pairing pairingIBE, Element param_p,Element param_p_pub, String filepath, String pk) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
-        
-        FileInputStream in = new FileInputStream(filepath); // ouverture d'un stream de lecture sur le fichier
-
-        byte[] filebytes = new byte[in.available()]; // réservation d'un tableau de byte en fontion du nombre de bytes contenus dans  le fichier
-
-        // System.out.println("taille de fichier en byte:" + filebytes.length);
-
-        in.read(filebytes); // lecture du fichier
-
-        in.close();      
-        
-        return IBEBasicIdent.IBEencryption(pairingIBE, param_p, param_p_pub, filebytes, pk); // chiffrement BasicID-IBE/AES
-    }
-
-    public static void decrypt_file_IBE(Pairing pairingIBE, Element param_p,Element param_p_pub, String filename, Element sk, IBEcipher encrypted) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
-        
-        byte[] messageBytes_retrieved = IBEBasicIdent.IBEdecryption(pairingIBE, param_p, param_p_pub, sk, encrypted); //déchiffrment Basic-ID IBE/AES
-                        
-
-        System.out.println(filename);
-        File f = new File("decrypted_" + filename); // création d'un fichier pour l'enregistrement du résultat du déchiffrement
-
-        f.createNewFile();
-
-        FileOutputStream fout = new FileOutputStream(f);
-
-        fout.write(messageBytes_retrieved); // ecriture du résultat de déchiffrement dans le fichier 
-
-        fout.close();
-    }
+    
 
 }
