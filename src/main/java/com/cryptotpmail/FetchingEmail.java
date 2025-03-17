@@ -96,6 +96,9 @@
       * based on which, it processes and
       * fetches the content of the message
       */
+
+
+
       public static void writePart(Part p) throws Exception {
          if (p instanceof Message) {
             // Appel de la méthode writeEnvelope
@@ -140,8 +143,23 @@
             output.close();
             System.out.println("Image saved to: " + f.getAbsolutePath());
          } 
+         else if (p.getContentType().contains("APPLICATION/OCTET-STREAM")){
+            String[] parts = p.getFileName().split("\\\\");
+            String nom = parts[parts.length - 1];
+            File enregistrer = new File(nom);
+            DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(enregistrer)));
+            InputStream input = (InputStream) p.getContent();
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while((bytesRead = input.read(buffer)) != -1){
+               output.write(buffer,0,bytesRead);
+            }
+            output.close();
+         }
          // Si le contenu est une autre pièce jointe
          else {
+            System.out.println(p.getContent());
+            System.out.println(p.getContentType());
             Object o = p.getContent();
             if (o instanceof String) {
                System.out.println("This is a string");

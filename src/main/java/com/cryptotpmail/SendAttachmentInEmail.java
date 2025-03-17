@@ -1,6 +1,12 @@
 package com.cryptotpmail;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -17,9 +23,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 
 public class SendAttachmentInEmail {
-   public static void main(String[] args) {
+   public static void main(String[] args) throws IOException {
       // Recipient's email ID needs to be mentioned.
       String to = "tp.crypto.mail89@gmail.com";
   
@@ -63,7 +70,7 @@ public class SendAttachmentInEmail {
          BodyPart messageBodyPart = new MimeBodyPart();
 
          // Now set the actual message
-         messageBodyPart.setText("This is message body JE SAIS APS AIYGYEGI7YFGUYEGFGFEI");
+         messageBodyPart.setText("This is message body TEST ENVOIE BYTE");
 
          // Create a multipar message
          Multipart multipart = new MimeMultipart();
@@ -72,8 +79,46 @@ public class SendAttachmentInEmail {
          multipart.addBodyPart(messageBodyPart);
 
          // Part two is attachment
-         messageBodyPart = new MimeBodyPart();
+
+
          String filename = "C:\\Users\\menut\\Desktop\\Tutoriel Utilisation Fichier Python.pdf";
+         /*
+         File fichier_to_byte = new File(filename);
+         FileInputStream fluxBinaire = new FileInputStream(fichier_to_byte);
+         ByteArrayOutputStream ByteOutput = new ByteArrayOutputStream(); //Va stocker la donnée en mémoire 
+         byte[] buffer = new byte[1024];
+         int byteLu;
+         while((byteLu = fluxBinaire.read(buffer)) != -1){
+            ByteOutput.write(buffer,0,byteLu);
+         }
+
+         fluxBinaire.close()
+         byte [] fichier_byte = ByteOutput.toByteArray();
+          */
+         String[] parts = filename.split("\\\\");
+         String nomDuFichier = parts[parts.length - 1];
+         messageBodyPart.setFileName(nomDuFichier);
+         System.out.println(nomDuFichier);
+         byte[] fichierEnByte = Files.readAllBytes(new File(filename).toPath());
+
+         String mimeType = Files.probeContentType(new File(filename).toPath());
+         if (mimeType == null){
+            mimeType = "application/octet-stream";
+         }
+         DataSource source = new ByteArrayDataSource(fichierEnByte, mimeType);
+
+         MimeBodyPart piecejointe = new MimeBodyPart();
+         piecejointe.setDataHandler(new DataHandler(source));
+         piecejointe.setFileName(nomDuFichier);
+
+         multipart.addBodyPart(piecejointe);
+         message.setContent(multipart);
+
+         Transport.send(message);
+         System.out.println("Message envoyé avec piece jointe : " + filename);
+         /* 
+         messageBodyPart = new MimeBodyPart();
+
          DataSource source = new FileDataSource(filename);
          messageBodyPart.setDataHandler(new DataHandler(source));
          messageBodyPart.setFileName(filename);
@@ -84,7 +129,7 @@ public class SendAttachmentInEmail {
 
          // Send message
          Transport.send(message);
-
+         */
          System.out.println("Sent message successfully....");
   
       } catch (MessagingException e) {
