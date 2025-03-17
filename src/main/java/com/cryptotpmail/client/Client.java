@@ -31,6 +31,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import com.cryptotpmail.elgamal.PairKeys;
+import com.cryptotpmail.ibe.AESCrypto;
 import com.cryptotpmail.ibe.IBEBasicIdent;
 import com.cryptotpmail.ibe.IBEcipher;
 import com.cryptotpmail.elgamal.EXschnorsig;
@@ -191,21 +192,29 @@ public class Client {
             String pk) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
 
-        IBEcipher c = IBEBasicIdent.IBEencryption(pairingIBE, param_p, param_p_pub, filebytes, pk);
+        Element random = pairingIBE.getG1().newRandomElement();
+        byte[] file_encrypted = AESCrypto.encrypt(filebytes, random.toBytes());
+
+        IBEcipher c = IBEBasicIdent.IBEencryption(pairingIBE, param_p, param_p_pub, random.toBytes(), pk);
         byte[] U = Base64.getEncoder().encode(c.getU().toBytes());
         byte[] V = Base64.getEncoder().encode(c.getV());
         byte[] Aescipher = Base64.getEncoder().encode(c.getAescipher());
+        byte[] file_encrypted_base64 = Base64.getEncoder().encode(file_encrypted);
         byte[] virgule = ",".getBytes();
-        byte[] encrypted = new byte[U.length + V.length + Aescipher.length + 2];
+
+        byte[] encrypted = new byte[U.length + V.length + Aescipher.length + file_encrypted_base64.length + 3];
 
         System.arraycopy(U, 0, encrypted, 0, U.length);
         System.arraycopy(virgule, 0, encrypted, U.length, 1);
         System.arraycopy(V, 0, encrypted, U.length + 1, V.length);
         System.arraycopy(virgule, 0, encrypted, U.length + 1 + V.length, 1);
         System.arraycopy(Aescipher, 0, encrypted, U.length + 1 + V.length + 1, Aescipher.length);
+        System.arraycopy(virgule, 0, encrypted, U.length + 1 + V.length + 1 + Aescipher.length, 1);
+        System.arraycopy(file_encrypted_base64, 0, encrypted, U.length + 1 + V.length + 1 + Aescipher.length + 1,
+                file_encrypted_base64.length);
 
-        return encrypted; // chiffrement
-                          // BasicID-IBE/AES
+        return encrypted;
+
     }
 
     public static byte[] encrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, String filepath,
@@ -236,18 +245,20 @@ public class Client {
         String u = ibecypher_bytes_string.split(",")[0];
         String v = ibecypher_bytes_string.split(",")[1];
         String Aescipher = ibecypher_bytes_string.split(",")[2];
+        String file_encrypted = ibecypher_bytes_string.split(",")[3];
 
         Element U = pairingIBE.getG1().newElementFromBytes(Base64.getDecoder().decode(u));
         byte[] V = Base64.getDecoder().decode(v);
         byte[] Aescipher_bytes = Base64.getDecoder().decode(Aescipher);
+        byte[] file_encrypted_bytes = Base64.getDecoder().decode(file_encrypted);
 
         IBEcipher c = new IBEcipher(U, V, Aescipher_bytes);
 
-        byte[] messageBytes_retrieved = IBEBasicIdent.IBEdecryption(pairingIBE, param_p, param_p_pub, sk, c); // déchiffrment
+        byte[] aes_key = IBEBasicIdent.IBEdecryption(pairingIBE, param_p, param_p_pub, sk, c); // déchiffrment
                                                                                                               // Basic-ID
                                                                                                               // IBE/AES
 
-        System.out.println(filename);
+        byte[] messageBytes_retrieved = AESCrypto.decrypt(file_encrypted_bytes, aes_key); // déchiffrement AES
         File f = new File("decrypted_" + filename); // création d'un fichier pour l'enregistrement du résultat du
                                                     // déchiffrement
 
