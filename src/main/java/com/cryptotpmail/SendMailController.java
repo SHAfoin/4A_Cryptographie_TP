@@ -150,11 +150,12 @@ public class SendMailController {
             System.out.println("Envoyé par : "+username);
             System.out.println("Destinataire : "+recipient);
             System.out.println("Sujet : "+subject);
-            System.out.println("Message : "+body);
             if (!listFile.isEmpty()){
                 System.out.println("Pièce jointe : "+printListFile(listFile));
             }
-            // System.out.println("Mail envoyé...");
+            System.out.println("Message : "+body);
+            System.out.println("Mail envoyé...");
+            
         }
 
     }
