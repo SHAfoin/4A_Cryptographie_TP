@@ -103,10 +103,10 @@ public class FetchEmailByte {
 
 
    public static void writePart(Part p) throws Exception {
-    System.out.println(p.getContentType());
-    if (p.isMimeType("multipart/MIXED")){
-        Multipart multipart = (Multipart) p.getContent();
-        for(int i = 0;i<multipart.getCount();i++){
+      System.out.println(p.getContentType());
+      if (p.isMimeType("multipart/MIXED")){
+         Multipart multipart = (Multipart) p.getContent();
+         for(int i = 0;i<multipart.getCount();i++){
             BodyPart BodyPart = multipart.getBodyPart(i);
 
             if(Part.ATTACHMENT.equalsIgnoreCase(BodyPart.getDisposition())){
@@ -128,6 +128,15 @@ public class FetchEmailByte {
 
             }
         }
+     }
+     else{
+      System.out.println("Mail sans pièce jointe");
+      System.out.println("---------------------------------");
+      System.out.println("Subject: " + ((Message) p).getSubject());
+      System.out.println("From: " + ((Message) p).getFrom()[0]);
+      System.out.println("Text: " + ((Message) p).getContent().toString());
+
+
      }
    }
    
