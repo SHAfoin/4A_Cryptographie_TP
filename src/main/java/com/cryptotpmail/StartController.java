@@ -31,7 +31,7 @@ public class StartController{
     @FXML
     private Parent root;
 
-    private Image image = new Image(getClass().getResourceAsStream("logoChatGpt.png"));
+    private Image image = new Image(getClass().getResourceAsStream("logo.png"));
     
     // Fonctions 
     // Personnalise le logo de l'interface

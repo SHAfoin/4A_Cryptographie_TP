@@ -32,7 +32,7 @@
       </ScrollPane>
       <ImageView fx:id="imageView" fitHeight="39.0" fitWidth="50.0" layoutX="24.0" layoutY="12.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@logoChatGpt.png" />
+            <Image url="@logo.png" />
          </image>
       </ImageView>
       <ColorPicker fx:id="colorPickerBtn" layoutX="24.0" layoutY="57.0" onAction="#changeColor" prefHeight="26.0" prefWidth="342.0" />

@@ -1,6 +1,5 @@
 package com.cryptotpmail;
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,11 +28,11 @@ public class SendAttachmentInEmail {
    public static void main(String[] args) throws IOException {
       // Recipient's email ID needs to be mentioned.
       String to = "tp.crypto.mail89@gmail.com";
-  
+
       // Sender's email ID needs to be mentioned
       String from = "tp.crypto.mail89@gmail.com";
-      final String username = "tp.crypto.mail89";//change accordingly
-      final String password = "ztan acej xhei wvtq";//change accordingly
+      final String username = "tp.crypto.mail89";// change accordingly
+      final String password = "ztan acej xhei wvtq";// change accordingly
 
       // Assuming you are sending email through relay.jangosmtp.net
       String host = "smtp.gmail.com";
@@ -46,11 +45,11 @@ public class SendAttachmentInEmail {
 
       // Get the Session object.
       Session session = Session.getInstance(props,
-         new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-               return new PasswordAuthentication(username, password);
-            }
-         });
+            new javax.mail.Authenticator() {
+               protected PasswordAuthentication getPasswordAuthentication() {
+                  return new PasswordAuthentication(username, password);
+               }
+            });
 
       try {
          // Create a default MimeMessage object.
@@ -61,7 +60,7 @@ public class SendAttachmentInEmail {
 
          // Set To: header field of the header.
          message.setRecipients(Message.RecipientType.TO,
-            InternetAddress.parse(to));
+               InternetAddress.parse(to));
 
          // Set Subject: header field
          message.setSubject("SIUUUUUUUUUUUUUUUUUUUUUUUUUUU Subject");
@@ -80,29 +79,28 @@ public class SendAttachmentInEmail {
 
          // Part two is attachment
 
-
-         String filename = "C:\\Users\\menut\\Desktop\\Tutoriel Utilisation Fichier Python.pdf";
+         String filename = "D:\\Images\\Medaka.png";
          /*
-         File fichier_to_byte = new File(filename);
-         FileInputStream fluxBinaire = new FileInputStream(fichier_to_byte);
-         ByteArrayOutputStream ByteOutput = new ByteArrayOutputStream(); //Va stocker la donnée en mémoire 
-         byte[] buffer = new byte[1024];
-         int byteLu;
-         while((byteLu = fluxBinaire.read(buffer)) != -1){
-            ByteOutput.write(buffer,0,byteLu);
-         }
-
-         fluxBinaire.close()
-         byte [] fichier_byte = ByteOutput.toByteArray();
+          * File fichier_to_byte = new File(filename);
+          * FileInputStream fluxBinaire = new FileInputStream(fichier_to_byte);
+          * ByteArrayOutputStream ByteOutput = new ByteArrayOutputStream(); //Va stocker
+          * la donnée en mémoire
+          * byte[] buffer = new byte[1024];
+          * int byteLu;
+          * while((byteLu = fluxBinaire.read(buffer)) != -1){
+          * ByteOutput.write(buffer,0,byteLu);
+          * }
+          * 
+          * fluxBinaire.close()
+          * byte [] fichier_byte = ByteOutput.toByteArray();
           */
          String[] parts = filename.split("\\\\");
          String nomDuFichier = parts[parts.length - 1];
-         messageBodyPart.setFileName(nomDuFichier);
          System.out.println(nomDuFichier);
          byte[] fichierEnByte = Files.readAllBytes(new File(filename).toPath());
 
          String mimeType = Files.probeContentType(new File(filename).toPath());
-         if (mimeType == null){
+         if (mimeType == null) {
             mimeType = "application/octet-stream";
          }
          DataSource source = new ByteArrayDataSource(fichierEnByte, mimeType);
@@ -116,22 +114,22 @@ public class SendAttachmentInEmail {
 
          Transport.send(message);
          System.out.println("Message envoyé avec piece jointe : " + filename);
-         /* 
-         messageBodyPart = new MimeBodyPart();
-
-         DataSource source = new FileDataSource(filename);
-         messageBodyPart.setDataHandler(new DataHandler(source));
-         messageBodyPart.setFileName(filename);
-         multipart.addBodyPart(messageBodyPart);
-
-         // Send the complete message parts
-         message.setContent(multipart);
-
-         // Send message
-         Transport.send(message);
-         */
+         /*
+          * messageBodyPart = new MimeBodyPart();
+          * 
+          * DataSource source = new FileDataSource(filename);
+          * messageBodyPart.setDataHandler(new DataHandler(source));
+          * messageBodyPart.setFileName(filename);
+          * multipart.addBodyPart(messageBodyPart);
+          * 
+          * // Send the complete message parts
+          * message.setContent(multipart);
+          * 
+          * // Send message
+          * Transport.send(message);
+          */
          System.out.println("Sent message successfully....");
-  
+
       } catch (MessagingException e) {
          throw new RuntimeException(e);
       }
