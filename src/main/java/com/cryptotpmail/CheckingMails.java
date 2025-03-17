@@ -20,13 +20,14 @@ public class CheckingMails {
       //create properties field
       Properties properties = new Properties();
 
-      properties.put("mail.pop3.host", host);
-      properties.put("mail.pop3.port", "995");
-      properties.put("mail.pop3.starttls.enable", "true");
+      properties.put("mail.imap.host", host);
+      properties.put("mail.imap.port", "993");
+      properties.put("mail.imap.ssl.enable", "true");
+      properties.put("mail.imap.auth", "true");
       Session emailSession = Session.getDefaultInstance(properties);
   
       //create the POP3 store object and connect with the pop server
-      Store store = emailSession.getStore("pop3s");
+      Store store = emailSession.getStore("imap");
 
       store.connect(host, user, password);
 
@@ -63,8 +64,8 @@ public class CheckingMails {
 
    public static void main(String[] args) {
       
-      String host = "pop.gmail.com";// change accordingly
-      String mailStoreType = "pop3";
+      String host = "imap.gmail.com";// change accordingly
+      String mailStoreType = "imap";
       String username = "tp.crypto.mail89@gmail.com";// change accordingly
       String password = "ztan acej xhei wvtq";// change accordingly
 
