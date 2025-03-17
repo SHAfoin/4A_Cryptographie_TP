@@ -14,7 +14,7 @@ public class Mailsend {
     
     public static void main(String[] args) {
         // Recipient's email ID needs to be mentioned.
-        String to = "tp.crypto.mail89@gmail.com";
+        String to = "coxeh19551@winotkc.com"; //"tp.crypto.mail89@gmail.com";
   
         // Sender's email ID needs to be mentioned
         String from = "tp.crypto.mail89@gmail.com";
@@ -29,6 +29,7 @@ public class Mailsend {
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", "25");
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
   
         // Get the Session object.
         Session session = Session.getInstance(props,
@@ -53,8 +54,7 @@ public class Mailsend {
          message.setSubject("Testing Subject");
       
          // Now set the actual message
-         message.setText("LUGFUEOI " +
-          "BAH NN");
+         message.setText("Test1234Tristan");
   
          // Send message
          Transport.send(message);
