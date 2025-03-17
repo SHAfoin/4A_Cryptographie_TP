@@ -63,7 +63,7 @@ public class Client {
             String filename = filepath.substring(filepath.lastIndexOf("\\") + 1);
 
             // ENCRYPTION IBE
-            IBEcipher ibecipher = encrypt_file_IBE(pairingIBE, client.getP(), client.getP_pub(), filepath, id);
+            byte[] ibecipher = encrypt_file_IBE(pairingIBE, client.getP(), client.getP_pub(), filepath, id);
 
             // DECRYPTION FICHIER IBE
             decrypt_file_IBE(pairingIBE, client.getP(), client.getP_pub(),
@@ -187,14 +187,28 @@ public class Client {
         return null;
     }
 
-    public static IBEcipher encrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, byte[] filebytes,
+    public static byte[] encrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, byte[] filebytes,
             String pk) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
-        return IBEBasicIdent.IBEencryption(pairingIBE, param_p, param_p_pub, filebytes, pk); // chiffrement
-                                                                                             // BasicID-IBE/AES
+
+        IBEcipher c = IBEBasicIdent.IBEencryption(pairingIBE, param_p, param_p_pub, filebytes, pk);
+        byte[] U = Base64.getEncoder().encode(c.getU().toBytes());
+        byte[] V = Base64.getEncoder().encode(c.getV());
+        byte[] Aescipher = Base64.getEncoder().encode(c.getAescipher());
+        byte[] virgule = ",".getBytes();
+        byte[] encrypted = new byte[U.length + V.length + Aescipher.length + 2];
+
+        System.arraycopy(U, 0, encrypted, 0, U.length);
+        System.arraycopy(virgule, 0, encrypted, U.length, 1);
+        System.arraycopy(V, 0, encrypted, U.length + 1, V.length);
+        System.arraycopy(virgule, 0, encrypted, U.length + 1 + V.length, 1);
+        System.arraycopy(Aescipher, 0, encrypted, U.length + 1 + V.length + 1, Aescipher.length);
+
+        return encrypted; // chiffrement
+                          // BasicID-IBE/AES
     }
 
-    public static IBEcipher encrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, String filepath,
+    public static byte[] encrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, String filepath,
             String pk) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, IOException {
 
@@ -209,17 +223,29 @@ public class Client {
 
         in.close();
 
-        return IBEBasicIdent.IBEencryption(pairingIBE, param_p, param_p_pub, filebytes, pk); // chiffrement
-                                                                                             // BasicID-IBE/AES
+        return encrypt_file_IBE(pairingIBE, param_p, param_p_pub, filebytes, pk); // chiffrement
+                                                                                  // BasicID-IBE/AES
     }
 
     public static void decrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, String filename,
-            Element sk, IBEcipher encrypted) throws InvalidKeyException, NoSuchAlgorithmException,
+            Element sk, byte[] encrypted) throws InvalidKeyException, NoSuchAlgorithmException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 
-        byte[] messageBytes_retrieved = IBEBasicIdent.IBEdecryption(pairingIBE, param_p, param_p_pub, sk, encrypted); // déchiffrment
-                                                                                                                      // Basic-ID
-                                                                                                                      // IBE/AES
+        String ibecypher_bytes_string = new String(encrypted);
+        System.out.println(ibecypher_bytes_string);
+        String u = ibecypher_bytes_string.split(",")[0];
+        String v = ibecypher_bytes_string.split(",")[1];
+        String Aescipher = ibecypher_bytes_string.split(",")[2];
+
+        Element U = pairingIBE.getG1().newElementFromBytes(Base64.getDecoder().decode(u));
+        byte[] V = Base64.getDecoder().decode(v);
+        byte[] Aescipher_bytes = Base64.getDecoder().decode(Aescipher);
+
+        IBEcipher c = new IBEcipher(U, V, Aescipher_bytes);
+
+        byte[] messageBytes_retrieved = IBEBasicIdent.IBEdecryption(pairingIBE, param_p, param_p_pub, sk, c); // déchiffrment
+                                                                                                              // Basic-ID
+                                                                                                              // IBE/AES
 
         System.out.println(filename);
         File f = new File("decrypted_" + filename); // création d'un fichier pour l'enregistrement du résultat du
