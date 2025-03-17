@@ -19,7 +19,7 @@
             <Font size="18.0" />
          </font></Label>
       <Button fx:id="downloadAttachmentBtn" layoutX="477.0" layoutY="18.0" mnemonicParsing="false" onAction="#downloadAttachment" prefHeight="26.0" prefWidth="110.0" text="Download" />
-      <Button layoutX="143.0" layoutY="89.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="104.0" text="Refresh" />
+      <Button layoutX="143.0" layoutY="89.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="104.0" text="Refresh" onAction="#fetchFromServer" />
       <Button fx:id="logOutBtn" layoutX="262.0" layoutY="89.0" mnemonicParsing="false" onAction="#logOut" prefHeight="26.0" prefWidth="104.0" text="Logout" />
       <ListView fx:id="listViewMail" editable="true" layoutX="24.0" layoutY="123.0" prefHeight="260.0" prefWidth="342.0" />
       <Separator layoutX="370.0" layoutY="52.0" orientation="VERTICAL" prefHeight="330.0" prefWidth="10.0" />

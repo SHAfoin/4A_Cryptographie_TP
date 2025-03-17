@@ -147,15 +147,16 @@ public class SendMailController {
             }
         }
         else{
-            System.out.println("Envoyé par : "+username);
-            System.out.println("Destinataire : "+recipient);
-            System.out.println("Sujet : "+subject);
-            if (!listFile.isEmpty()){
-                System.out.println("Pièce jointe : "+printListFile(listFile));
-            }
-            System.out.println("Message : "+body);
-            System.out.println("Mail envoyé...");
-            
+            SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile);
+            // System.out.println("Envoyé par : "+username);
+            // System.out.println("Destinataire : "+recipient);
+            // System.out.println("Sujet : "+subject);
+            // if (!listFile.isEmpty()){
+            //     System.out.println("Pièce jointe : "+printListFile(listFile));
+            // }
+            // System.out.println("Message : "+body);
+            // System.out.println("Mail envoyé...");
+            this.cancelSending(event);
         }
 
     }

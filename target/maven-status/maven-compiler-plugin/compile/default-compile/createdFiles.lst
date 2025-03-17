@@ -13,4 +13,5 @@ com\cryptotpmail\SendMailController.class
 com\cryptotpmail\Mailsend.class
 com\cryptotpmail\LabelInScrollPaneExample.class
 com\cryptotpmail\MainController.class
+com\cryptotpmail\MainController$3.class
 com\cryptotpmail\SendAttachmentInEmail$1.class
