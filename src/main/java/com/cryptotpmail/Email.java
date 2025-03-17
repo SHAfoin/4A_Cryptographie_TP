@@ -1,13 +1,12 @@
 package com.cryptotpmail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 
+import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -16,11 +15,12 @@ import javax.mail.Part;
 
 public class Email {
 
+    private int id;
     private String sender;
     private String recipient;
     private String subject;
     private String body;
-    private File attachment;
+    private String attachment;
     private LocalDateTime timestamp;
 
     // Constructeur
@@ -34,11 +34,12 @@ public class Email {
         this.recipient = recipient;
         this.subject = subject;
         this.body = body;
+        this.attachment = "";
         this.timestamp = LocalDateTime.now(); // Date et heure d'envoi
     }
 
     // Constructeur avec pièce jointe
-    public Email(String sender, String recipient, String subject, String body, File attachment) {
+    public Email(String sender, String recipient, String subject, String body, String attachment) {
         this.sender = sender;
         this.recipient = recipient;
         this.subject = subject;
@@ -48,39 +49,34 @@ public class Email {
     }
 
     public Email(Message message) throws MessagingException, IOException {
-        if (message.getFrom().length > 0) {
-            this.sender = message.getFrom()[0].toString();
+        this.id = message.getMessageNumber();
+        this.sender = "";
+        for (Address address : message.getFrom()) {
+            this.sender += address.toString() + ";";
         }
-        if (message.getAllRecipients().length > 0) {
-            this.recipient = message.getAllRecipients()[0].toString();
+        this.recipient = "";
+        for (Address address : message.getAllRecipients()) {
+            this.sender += address.toString() + ";";
         }
         this.subject = message.getSubject();
-        this.body = message.getContent().toString();
+        this.body = "";
+        this.attachment = "";
         if (message.isMimeType("multipart/MIXED")) {
             Multipart multipart = (Multipart) message.getContent();
-            if (multipart.getCount() > 0) {
-                BodyPart body = multipart.getBodyPart(0);
+            for (int i = 0; i < multipart.getCount(); i++) {
+                BodyPart body = multipart.getBodyPart(i);
                 if (Part.ATTACHMENT.equalsIgnoreCase(body.getDisposition())) {
-                    InputStream input = body.getInputStream();
-                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                    byte[] data = new byte[1024];
-                    int byteLu;
-                    while ((byteLu = input.read(data, 0, data.length)) != -1) {
-                        buffer.write(data, 0, byteLu);
-                    }
-                    byte[] fichierEnByte = buffer.toByteArray();
-                    File fichier = new File(body.getFileName());
-                    FileOutputStream outStream = new FileOutputStream(fichier);
-                    outStream.write(fichierEnByte);
-                    outStream.close();
-                    this.attachment = fichier;
-
+                    String filename = body.getFileName();
+                    this.attachment += filename + ";";
+                } else {
+                    this.body += body.getContent().toString();
                 }
             }
         }
         this.timestamp = message.getReceivedDate().toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
+        System.out.println(this.id);
     }
 
     // Getters
@@ -100,12 +96,16 @@ public class Email {
         return body;
     }
 
-    public File getAttachment() {
+    public String getAttachment() {
         return attachment;
     }
 
     public LocalDateTime getTimestamp() {
         return timestamp;
+    }
+
+    public int getId() {
+        return id;
     }
 
     // Setters

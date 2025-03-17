@@ -6,13 +6,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -26,11 +34,15 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
+import com.cryptotpmail.client.Client;
+import com.cryptotpmail.client.ClientIBEParams;
+
+import it.unisa.dia.gas.jpbc.Pairing;
+
 public class SendAttachmentInEmail {
-   public static void sendMail(String from, String to, String subject, String body, ArrayList<File> listfile)
+   public static void sendMail(String from, String to, String subject, String body, ArrayList<File> listfile,
+         Pairing pairingIBE, ClientIBEParams client, String password)
          throws IOException {
-      final String username = "tp.crypto.mail89";// change accordingly
-      final String password = "ztan acej xhei wvtq";// change accordingly
 
       // Assuming you are sending email through relay.jangosmtp.net
       String host = "smtp.gmail.com";
@@ -39,13 +51,13 @@ public class SendAttachmentInEmail {
       props.put("mail.smtp.auth", "true");
       props.put("mail.smtp.starttls.enable", "true");
       props.put("mail.smtp.host", host);
-      props.put("mail.smtp.port", "25");
+      props.put("mail.smtp.port", "587");
 
       // Get the Session object.
       Session session = Session.getInstance(props,
             new javax.mail.Authenticator() {
                protected PasswordAuthentication getPasswordAuthentication() {
-                  return new PasswordAuthentication(username, password);
+                  return new PasswordAuthentication(from, password);
                }
             });
 
@@ -94,12 +106,14 @@ public class SendAttachmentInEmail {
          for (File file : listfile) {
             String filename = file.getName();
             byte[] fichierEnByte = Files.readAllBytes(file.toPath());
+            byte[] ibecipher = Client.encrypt_file_IBE(pairingIBE, client.getP(), client.getP_pub(), fichierEnByte,
+                  from);
 
             String mimeType = Files.probeContentType(file.toPath());
             if (mimeType == null) {
                mimeType = "application/octet-stream";
             }
-            DataSource source = new ByteArrayDataSource(fichierEnByte, mimeType);
+            DataSource source = new ByteArrayDataSource(ibecipher, mimeType);
             MimeBodyPart piecejointe = new MimeBodyPart();
             piecejointe.setDataHandler(new DataHandler(source));
             piecejointe.setFileName(filename);
@@ -128,6 +142,25 @@ public class SendAttachmentInEmail {
 
       } catch (MessagingException e) {
          throw new RuntimeException(e);
+      } catch (MalformedURLException ex) {
+         Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (IOException ex) {
+         Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (InvalidKeyException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (NoSuchAlgorithmException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (NoSuchPaddingException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (IllegalBlockSizeException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (BadPaddingException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
       }
    }
 }

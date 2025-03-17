@@ -1,17 +1,11 @@
 package com.cryptotpmail;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Properties;
 
 import javax.mail.Address;
@@ -25,11 +19,36 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.BodyPart;
 
-public class FetchEmailByte {
+public class FetchMail {
 
-   public static ArrayList<Email> fetch(String user) {
+   public static Message fetchMail(int id, String user, String password) throws MessagingException {
       String host = "imap.gmail.com";
-      String password = "ztan acej xhei wvtq";
+
+      Properties properties = new Properties();
+      properties.put("mail.store.protocol", "imap");
+      properties.put("mail.imap.host", host);
+      properties.put("mail.imap.port", "993");
+      properties.put("mail.imap.ssl.enable", "true");
+      properties.put("mail.imap.auth", "true");
+
+      Session emailSession = Session.getDefaultInstance(properties);
+      Store store = emailSession.getStore("imaps");
+
+      store.connect(host, user, password);
+
+      // create the folder object and open it
+      Folder emailFolder = store.getFolder("INBOX");
+      emailFolder.open(Folder.READ_ONLY);
+
+      System.out.println(emailFolder.getMessageCount());
+      // retrieve the messages from the folder in an array and print it
+      Message message = emailFolder.getMessage(id);
+      return message;
+
+   }
+
+   public static ArrayList<Email> fetchAllMails(String user, String password) {
+      String host = "imap.gmail.com";
       ArrayList<Email> list = new ArrayList<Email>();
       try {
          // create properties field
@@ -41,9 +60,6 @@ public class FetchEmailByte {
          properties.put("mail.imap.auth", "true");
 
          Session emailSession = Session.getDefaultInstance(properties);
-         // emailSession.setDebug(true);
-
-         // create the POP3 store object and connect with the pop server
          Store store = emailSession.getStore("imaps");
 
          store.connect(host, user, password);

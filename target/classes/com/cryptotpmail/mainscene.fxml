@@ -24,7 +24,7 @@
       <ListView fx:id="listViewMail" editable="true" layoutX="24.0" layoutY="123.0" prefHeight="260.0" prefWidth="342.0" />
       <Separator layoutX="370.0" layoutY="52.0" orientation="VERTICAL" prefHeight="330.0" prefWidth="10.0" />
       <Separator layoutX="379.0" layoutY="46.0" prefHeight="6.0" prefWidth="206.0" />
-      <Button layoutX="383.0" layoutY="18.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="98.0" text="Uncrypt" />
+      <Button fx:id="uncryptBtn" layoutX="383.0" layoutY="18.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="98.0" onAction="#uncrypt"  text="Uncrypt" />
       <ScrollPane fx:id="scrollPane" layoutX="379.0" layoutY="52.0" prefHeight="330.0" prefWidth="206.0">
          <content>
             <Label fx:id="printMailLabel" />
