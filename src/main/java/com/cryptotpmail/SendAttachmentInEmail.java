@@ -27,10 +27,9 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
 public class SendAttachmentInEmail {
-   public static void sendMail(String from, String to, String subject, String body, ArrayList<File> listfile)
+   public static void sendMail(String from, String to, String subject, String body, ArrayList<File> listfile,
+         String password, String username)
          throws IOException {
-      final String username = "tp.crypto.mail89";// change accordingly
-      final String password = "ztan acej xhei wvtq";// change accordingly
 
       // Assuming you are sending email through relay.jangosmtp.net
       String host = "smtp.gmail.com";
