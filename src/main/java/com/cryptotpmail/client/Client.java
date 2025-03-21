@@ -43,10 +43,6 @@ import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import it.unisa.dia.gas.jpbc.Element;
 
-/**
- *
- * @author imino
- */
 public class Client {
 
     public static void main(String[] args) {
@@ -346,7 +342,7 @@ public class Client {
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 
         String ibecypher_bytes_string = new String(encrypted);
-        System.out.println(ibecypher_bytes_string);
+        System.out.println("CYPHER " + ibecypher_bytes_string);
         String u = ibecypher_bytes_string.split(",")[0];
         String v = ibecypher_bytes_string.split(",")[1];
         String Aescipher = ibecypher_bytes_string.split(",")[2];

@@ -1,11 +1,28 @@
 package com.cryptotpmail;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Part;
+
+import com.cryptotpmail.client.Client;
+import com.cryptotpmail.client.ClientIBEParams;
+
+import it.unisa.dia.gas.jpbc.Pairing;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -35,6 +52,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 public class MainController implements Initializable {
 
@@ -63,10 +82,12 @@ public class MainController implements Initializable {
 
     private Color color;
     private String username;
-    private Image image;
     private String password;
+    private Image image;
+    private Email mailSelectionne;
+    private ClientIBEParams clientIBE;
+    private Pairing pairingIBE;
     private ArrayList<Email> listEmail = new ArrayList<Email>();
-    Email mailSelectionne;
 
     @FXML
     public void setLogo(Stage stage) {
@@ -105,6 +126,18 @@ public class MainController implements Initializable {
         pane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
+    public void setClientIBE(ClientIBEParams clientIBE) {
+        this.clientIBE = clientIBE;
+    }
+
+    public void setPairingIBE(Pairing pairingIBE) {
+        this.pairingIBE = pairingIBE;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     // Affiche l'id de l'utilisateur
     @FXML
     public void displayWelcomeLabel(String username) {
@@ -114,10 +147,6 @@ public class MainController implements Initializable {
     // Configure le nom de l'utilisateur
     public void setUsername(String user) {
         this.username = user;
-    }
-
-    public void addEmail(Email mail) {
-        this.listEmail.add(mail);
     }
 
     // Obtenir et afficher les mails
@@ -150,7 +179,7 @@ public class MainController implements Initializable {
                 if (newValue != null) {
                     mailSelectionne = newValue;
                     if (mailSelectionne.getAttachment() != null) {
-                        attachment = "Attachment : " + mailSelectionne.getAttachment().getName() + "\n";
+                        attachment = "Attachment : " + mailSelectionne.getAttachment();
                     }
                     printMailLabel.setText(
                             "From: " + mailSelectionne.getSender() + "\n"
@@ -173,29 +202,84 @@ public class MainController implements Initializable {
     }
 
     // Téléchargement des pièces jointes
-    public void downloadAttachment(ActionEvent event) throws IOException {
-        if ((mailSelectionne != null) && (mailSelectionne.getAttachment() != null)) {
-            System.out.println("Téléchargement pièce jointe...");
-            File attachment = mailSelectionne.getAttachment();
+    public void downloadAttachment(ActionEvent event) throws IOException, MessagingException {
+        if ((mailSelectionne != null) && (!mailSelectionne.getAttachment().equals(""))) {
+            Message message = FetchMail.fetchMail(mailSelectionne.getId(), username, password);
+            if (message.isMimeType("multipart/MIXED")) {
+                Multipart multipart = (Multipart) message.getContent();
+                for (int i = 0; i < multipart.getCount(); i++) {
+                    BodyPart body = multipart.getBodyPart(i);
+                    System.out.println(body.getContentType());
+                    if (body.isMimeType("TEXT/PLAIN")) {
+                        continue;
+                    }
+                    System.out.println("Téléchargement pièce jointe...");
 
-            // Boîte de dialogue pour choisir l'emplacement de sauvegarde
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Enregistrer la pièce jointe");
-            fileChooser.setInitialFileName(attachment.getName()); // Nom du fichier par défaut
+                    // Boîte de dialogue pour choisir l'emplacement de sauvegarde
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle("Enregistrer la pièce jointe");
+                    fileChooser.setInitialFileName(body.getFileName()); // Nom du fichier par défaut
 
-            // Filtre pour afficher uniquement les fichiers du même type
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Tous les fichiers", "*.*"));
+                    // Filtre pour afficher uniquement les fichiers du même type
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Tous les fichiers", "*.*"));
 
-            // OUvertur de la fenêtre pour sauvegarder le fichier
-            Window stage = ((Node) event.getSource()).getScene().getWindow();
-            File selectedFile = fileChooser.showSaveDialog(stage);
+                    // OUvertur de la fenêtre pour sauvegarder le fichier
+                    Window stage = ((Node) event.getSource()).getScene().getWindow();
+                    File selectedFile = fileChooser.showSaveDialog(stage);
 
-            if (selectedFile != null) {
-                // Permet de copier le fichier dans l'emplacement choisi par l'utilisateur
-                Files.copy(attachment.toPath(), selectedFile.toPath());
-                System.out.println("Pièce jointe téléchargée avec succès : " + selectedFile.getAbsolutePath());
-            } else {
-                System.out.println("Téléchargement annulé par l'utilisateur.");
+                    if (selectedFile != null) {
+                        InputStream inputStream = body.getInputStream();
+                        FileOutputStream outStream = new FileOutputStream(selectedFile);
+                        outStream.write(inputStream.readAllBytes());
+                        outStream.close();
+                        inputStream.close();
+                        System.out.println("Pièce jointe téléchargée avec succès : " + selectedFile.getAbsolutePath());
+                    } else {
+                        System.out.println("Téléchargement annulé par l'utilisateur.");
+                    }
+                }
+            }
+        } else {
+            System.out.println("Aucune pièce jointe sélectionnée");
+        }
+    }
+
+    public void uncrypt(ActionEvent event) throws IOException, MessagingException, InvalidKeyException,
+            NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        if ((mailSelectionne != null) && (!mailSelectionne.getAttachment().equals(""))) {
+            Message message = FetchMail.fetchMail(mailSelectionne.getId(), username, password);
+            if (message.isMimeType("multipart/MIXED")) {
+                Multipart multipart = (Multipart) message.getContent();
+                for (int i = 0; i < multipart.getCount(); i++) {
+                    BodyPart body = multipart.getBodyPart(i);
+                    System.out.println(body.getContentType());
+                    if (body.isMimeType("TEXT/PLAIN")) {
+                        continue;
+                    }
+                    System.out.println("Téléchargement pièce jointe...");
+
+                    // Boîte de dialogue pour choisir l'emplacement de sauvegarde
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle("Enregistrer la pièce jointe");
+                    fileChooser.setInitialFileName(body.getFileName()); // Nom du fichier par défaut
+
+                    // Filtre pour afficher uniquement les fichiers du même type
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Tous les fichiers", "*.*"));
+
+                    // OUvertur de la fenêtre pour sauvegarder le fichier
+                    Window stage = ((Node) event.getSource()).getScene().getWindow();
+                    File selectedFile = fileChooser.showSaveDialog(stage);
+
+                    if (selectedFile != null) {
+                        InputStream inputStream = body.getInputStream();
+                        Client.decrypt_file_IBE(pairingIBE, clientIBE.getP(), clientIBE.getP_pub(),
+                                selectedFile.getAbsolutePath(), clientIBE.getSk(), inputStream.readAllBytes());
+                        inputStream.close();
+                        System.out.println("Pièce jointe téléchargée avec succès : " + selectedFile.getAbsolutePath());
+                    } else {
+                        System.out.println("Téléchargement annulé par l'utilisateur.");
+                    }
+                }
             }
         } else {
             System.out.println("Aucune pièce jointe sélectionnée");
@@ -231,6 +315,8 @@ public class MainController implements Initializable {
         // Envoi du logo
         sendMailController.setImage(image);
         sendMailController.setLogo(stage);
+        sendMailController.setClientIBE(clientIBE);
+        sendMailController.setPairingIBE(pairingIBE);
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setTitle("Send Email");
         scene = new Scene(root);
@@ -239,11 +325,12 @@ public class MainController implements Initializable {
     }
 
     public void fetchFromServer(ActionEvent event) {
-        ArrayList<Email> mailList = FetchEmailByte.fetch(username, password);
+        ArrayList<Email> mailList = FetchMail.fetchAllMails(username, password);
         if (mailList != null) {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
+                    listViewMail.getItems().clear();
                     for (Email email : mailList) {
                         listViewMail.getItems().add(email);
                     }
@@ -251,4 +338,5 @@ public class MainController implements Initializable {
             });
         }
     }
+
 }

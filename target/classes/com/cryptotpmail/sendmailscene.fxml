@@ -14,7 +14,7 @@
       <Button fx:id="chargeFileBtn" layoutX="285.0" layoutY="80.0" mnemonicParsing="false" onAction="#chargeFile" prefHeight="26.0" prefWidth="86.0" text="Pièce jointe" />
       <Button fx:id="sendMailBtn" layoutX="15.0" layoutY="359.0" mnemonicParsing="false" onAction="#sendMail" prefHeight="26.0" prefWidth="150.0" text="Envoyer" />
       <Label layoutX="15.0" layoutY="62.0" prefHeight="18.0" prefWidth="63.0" text="Subject : " />
-      <Label layoutX="15.0" layoutY="14.0" text="Send from : " />
+      <Label layoutX="15.0" layoutY="14.0" text="Send to : " />
       <Button fx:id="CancelSendingBtn" layoutX="499.0" layoutY="359.0" mnemonicParsing="false" onAction="#cancelSending" prefHeight="26.0" prefWidth="86.0" text="Cancel" />
       <Label fx:id="fileLabel" layoutX="379.0" layoutY="80.0" prefHeight="26.0" prefWidth="206.0" />
    </children>

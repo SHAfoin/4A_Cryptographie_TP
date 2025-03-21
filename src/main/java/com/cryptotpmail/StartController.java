@@ -3,8 +3,10 @@ package com.cryptotpmail;
 import java.io.IOException;
 
 import com.cryptotpmail.client.Client;
-import com.cryptotpmail.client.ClientSessionKey;
+import com.cryptotpmail.client.ClientIBEParams;
 
+import it.unisa.dia.gas.jpbc.Pairing;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import javafx.scene.Node;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -50,14 +52,16 @@ public class StartController {
 
     @FXML
     public void login(ActionEvent event) throws IOException {
+        Pairing pairingIBE = PairingFactory.getPairing("curves\\a.properties");
+
         // Récupération données utilisateurs
-        String username = "titi";
-        String password = "toto";
+        String username = "";
+        String password = "";
         if (idUser.getText() != null & !(idUser.getText().trim().isEmpty())) {
             username = idUser.getText();
+        }
+        if (passwdUser.getText() != null & !(passwdUser.getText().trim().isEmpty())) {
             password = passwdUser.getText();
-        } else {
-            username = "tp.crypto.mail89";
         }
         ClientSessionKey sessionKey = Client.sessionParameters();
         boolean auth = Client.authentification(username, password, sessionKey);

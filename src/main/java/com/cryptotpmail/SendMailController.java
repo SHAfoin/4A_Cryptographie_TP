@@ -5,6 +5,10 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+
+import com.cryptotpmail.client.ClientIBEParams;
+
+import it.unisa.dia.gas.jpbc.Pairing;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -55,6 +59,8 @@ public class SendMailController {
     private String recipient, subject, body, username = " ", password = " ";
     private File fichierCheck;
     private ArrayList<File> listFile = new ArrayList<>();
+    private ClientIBEParams clientIBE;
+    private Pairing pairingIBE;
 
     // Fonctions
     public void setLogo(Stage stage) {
@@ -74,6 +80,14 @@ public class SendMailController {
         return password;
     }
 
+    public void setClientIBE(ClientIBEParams clientIBE) {
+        this.clientIBE = clientIBE;
+    }
+
+    public void setPairingIBE(Pairing pairingIBE) {
+        this.pairingIBE = pairingIBE;
+    }
+
     // Récupère le nom de l'utilisateur connecté
     public void setUser(String user) {
         username = user;
@@ -85,6 +99,9 @@ public class SendMailController {
 
     // Récupère la couleur du background
     public void setColorBackground(Color color) {
+    public void setPassword(String password) {
+        this.password = password;
+    }
         this.color = color;
         pane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
@@ -157,7 +174,8 @@ public class SendMailController {
                 System.out.println("Message vide...");
             }
         } else {
-            SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile, password, username);
+            SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile, pairingIBE, clientIBE,
+                    password);
             // System.out.println("Envoyé par : "+username);
             // System.out.println("Destinataire : "+recipient);
             // System.out.println("Sujet : "+subject);
@@ -180,6 +198,8 @@ public class SendMailController {
         mainController.displayLogo(image);
         mainController.setUsername(username);
         mainController.setPassword(password);
+        mainController.setClientIBE(clientIBE);
+        mainController.setPairingIBE(pairingIBE);
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setTitle("Menu");
         scene = new Scene(root);
