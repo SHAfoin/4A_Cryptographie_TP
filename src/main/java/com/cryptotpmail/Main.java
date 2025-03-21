@@ -11,7 +11,6 @@ public class Main extends Application{
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        // System.out.println(Class.forName("com.cryptotpmail.Controller"));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/startscene.fxml"));
         Parent root  = loader.load();
         StartController startController = loader.getController();

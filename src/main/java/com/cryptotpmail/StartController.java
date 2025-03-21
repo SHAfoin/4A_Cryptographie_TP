@@ -55,28 +55,22 @@ public class StartController{
             username = "tp.crypto.mail89";
         }
         System.out.println("Utilisateur : "+username+"\nMot de passe : "+password);
-        System.out.println("Utilisateur connecté...");
 
         //Charge seconde scène 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/mainscene.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/Fascene.fxml"));
         root = loader.load();
 
         //Appel du controller MainController
-        MainController mainController = loader.getController();
-        mainController.setLogo(stage);
-        mainController.displayWelcomeLabel(username);
-        mainController.setUsername(username);
-        mainController.displayLogo(image);
+        FACheckingController faCheckingController = loader.getController();
+        faCheckingController.setUsername(username);
 
         //Appel de la seconde scene
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setTitle("Menu");
+        stage.setTitle("Authentication");
+        faCheckingController.setLogo(stage);
         scene = new Scene(root);
         stage.setScene(scene);
-        stage.show();
-
-
-        
+        stage.show();        
     }
 
     

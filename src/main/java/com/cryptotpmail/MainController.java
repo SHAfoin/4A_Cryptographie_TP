@@ -67,6 +67,7 @@ public class MainController implements Initializable {
     private ArrayList<Email> listEmail = new ArrayList<Email>();
     Email mailSelectionne;
 
+    @FXML
     public void setLogo(Stage stage) {
         try {
             Image logo = image;
@@ -76,18 +77,21 @@ public class MainController implements Initializable {
         }
     }
 
+    @FXML
     // Affiche le logo de l'interface
     public void displayLogo(Image image) {
         this.image = image;
         imageView.setImage(image);
     }
 
+    @FXML
     // Change la couleur du thème
     public void changeColor(ActionEvent event) {
         color = colorPickerBtn.getValue();
         pane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
+    @FXML
     public void setColorBackground(Color color) {
         pane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
@@ -112,7 +116,6 @@ public class MainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // Création du ScrollPane et ajout du label
         scrollPane = new ScrollPane();
-        // vBox = new VBox();
 
         // Afficher les mails dans la liste de mail
         listViewMail.setCellFactory(param -> new ListCell<Email>() {
