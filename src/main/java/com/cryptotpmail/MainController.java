@@ -64,6 +64,7 @@ public class MainController implements Initializable {
     private Color color;
     private String username;
     private Image image;
+    private String password;
     private ArrayList<Email> listEmail = new ArrayList<Email>();
     Email mailSelectionne;
 
@@ -74,6 +75,14 @@ public class MainController implements Initializable {
         } catch (Exception e) {
             System.out.println("Erreur lors du chargement du logo : " + e.getMessage());
         }
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     // Affiche le logo de l'interface
@@ -212,7 +221,8 @@ public class MainController implements Initializable {
             System.out.println("controlleur null");
         }
         // Envoie à la classe SendMailController le nom de l'utilisateur
-        sendMailController.getUser(username);
+        sendMailController.setUser(username);
+        sendMailController.setPassword(password);
         // Change la couleur du background
         sendMailController.setColorBackground(color);
         // Envoi du logo

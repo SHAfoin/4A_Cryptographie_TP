@@ -5,6 +5,7 @@
  */
 package com.cryptotpmail.autorite;
 
+import com.cryptotpmail.SendAttachmentInEmail;
 import com.cryptotpmail.client.ClientSessionKey;
 import com.cryptotpmail.elgamal.AESCrypto;
 import com.cryptotpmail.elgamal.EXschnorsig;
@@ -20,6 +21,7 @@ import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -29,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
@@ -40,6 +43,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import java.util.HashMap; // import the HashMap class
+import java.util.Random;
 
 /**
  *
@@ -190,6 +194,21 @@ public class HttpServeur {
                         he.sendResponseHeaders(200, -1);
 
                         he.getResponseBody().close();
+
+                        String sendUsername = "tp.crypto.mail89";
+                        String sendPassword = "ztan acej xhei wvtq";
+                        Random random = new Random();
+                        int deuxFA = random.nextInt();
+                        deuxFA = (deuxFA % 999999) + 100000;
+                        if (deuxFA < 0) {
+                            deuxFA = deuxFA * -1;
+                        }
+                        String Msg2FA = Integer.toString(deuxFA);
+                        SendAttachmentInEmail.sendMail(sendUsername, id, "OTP Code", Msg2FA,
+                                new ArrayList<File>(),
+                                sendPassword, sendUsername);
+                        System.out.println("Mail OTP envoyé...");
+
                     } catch (InvalidKeyException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();

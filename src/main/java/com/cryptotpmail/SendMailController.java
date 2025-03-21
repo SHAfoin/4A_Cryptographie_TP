@@ -27,9 +27,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.File;
 
-
 public class SendMailController {
-    
+
     @FXML
     private Stage stage;
     @FXML
@@ -53,12 +52,11 @@ public class SendMailController {
 
     private Color color;
     private Image image;
-    private String recipient, subject, body, username = " ";
+    private String recipient, subject, body, username = " ", password = " ";
     private File fichierCheck;
     private ArrayList<File> listFile = new ArrayList<>();
 
-
-    // Fonctions 
+    // Fonctions
     public void setLogo(Stage stage) {
         try {
             Image logo = image;
@@ -68,47 +66,60 @@ public class SendMailController {
         }
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
     // Récupère le nom de l'utilisateur connecté
-    public void getUser(String user){
+    public void setUser(String user) {
         username = user;
     }
 
-    // Récupère la couleur du background 
-    public void setColorBackground(Color color){
+    public String getUser() {
+        return username;
+    }
+
+    // Récupère la couleur du background
+    public void setColorBackground(Color color) {
         this.color = color;
         pane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
     // Récupère le logo de l'interface
-    public void setImage(Image image){
+    public void setImage(Image image) {
         this.image = image;
     }
 
     // Fonction qui évite les doublons
-    private boolean checkListFile(File file){
-        if(listFile.contains(file)){
+    private boolean checkListFile(File file) {
+        if (listFile.contains(file)) {
             return true;
-        }
-        else{
+        } else {
             return false;
         }
     }
-    //FOnctions qui affiche tous les fichiers de la liste
-    private String printListFile(ArrayList<File> listFile){
+
+    // FOnctions qui affiche tous les fichiers de la liste
+    private String printListFile(ArrayList<File> listFile) {
         String print = "";
         for (File i : listFile) {
-            print += i.getName()+" ";
+            print += i.getName() + " ";
         }
         return print;
     }
 
     @FXML
-    public void chargeFile(ActionEvent event)throws IOException{
+    public void chargeFile(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
 
-        // // Optionnel : Définir une extension de fichier par défaut (ex: images, txt, etc.)
+        // // Optionnel : Définir une extension de fichier par défaut (ex: images, txt,
+        // etc.)
         // fileChooser.getExtensionFilters().add(
-        //     new FileChooser.ExtensionFilter("Fichiers texte (*.txt)", "*.txt")
+        // new FileChooser.ExtensionFilter("Fichiers texte (*.txt)", "*.txt")
         // );
 
         // Ouvrir la boîte de dialogue
@@ -117,56 +128,54 @@ public class SendMailController {
 
         if (fichier != null) {
             System.out.println("Fichier sélectionné : " + fichier.getAbsolutePath());
-            //Evite les doublons
-            if (!checkListFile(fichier) == true){
+            // Evite les doublons
+            if (!checkListFile(fichier) == true) {
                 listFile.add(fichier);
-            }
-            else{
+            } else {
                 System.out.println("Fichier déjà ajouté !");
             }
             fileLabel.setText(printListFile(listFile));
             fichierCheck = fichier;
         }
-    
+
     }
 
     @FXML
-    public void sendMail(ActionEvent event) throws IOException{
+    public void sendMail(ActionEvent event) throws IOException {
         recipient = recipientTextField.getText();
         subject = subjectTextField.getText();
         body = bodyTextArea.getText();
-        if((recipient.isBlank())||(subject.isBlank())||(body.isBlank())){
-            if (recipient.isBlank()){
+        username = getUser();
+        password = getPassword();
+        if ((recipient.isBlank()) || (subject.isBlank()) || (body.isBlank())) {
+            if (recipient.isBlank()) {
                 System.out.println("Destinataire vide");
             }
-            if(subject.isBlank()){
+            if (subject.isBlank()) {
                 System.out.println("Sujet vide...");
-            }
-            else{
+            } else {
                 System.out.println("Message vide...");
             }
-        }
-        else{
-            SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile);
+        } else {
+            SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile, password, username);
             // System.out.println("Envoyé par : "+username);
             // System.out.println("Destinataire : "+recipient);
             // System.out.println("Sujet : "+subject);
             // if (!listFile.isEmpty()){
-            //     System.out.println("Pièce jointe : "+printListFile(listFile));
+            // System.out.println("Pièce jointe : "+printListFile(listFile));
             // }
             // System.out.println("Message : "+body);
             // System.out.println("Mail envoyé...");
             this.cancelSending(event);
         }
-
     }
 
     @FXML
     public void cancelSending(ActionEvent event) throws IOException {
         System.out.println(">>>Retour au menu principal...");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/mainscene.fxml"));
-        Parent root  = loader.load();
-        MainController mainController= loader.getController();
+        Parent root = loader.load();
+        MainController mainController = loader.getController();
         mainController.setColorBackground(color);
         mainController.displayLogo(image);
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

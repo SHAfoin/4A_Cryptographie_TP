@@ -18,7 +18,7 @@ import javafx.fxml.*;
 import javafx.scene.*;
 import javafx.stage.*;
 
-public class StartController{
+public class StartController {
 
     @FXML
     private TextField idUser;
@@ -32,8 +32,8 @@ public class StartController{
     private Parent root;
 
     private Image image = new Image(getClass().getResourceAsStream("logo.png"));
-    
-    // Fonctions 
+
+    // Fonctions
     // Personnalise le logo de l'interface
     public void setLogo(Stage stage) {
         try {
@@ -46,40 +46,37 @@ public class StartController{
 
     @FXML
     public void login(ActionEvent event) throws IOException {
-        //Récupération données utilisateurs
-        String username = "titi"; String password = "toto";
-        if  (idUser.getText() != null & !(idUser.getText().trim().isEmpty())){
+        // Récupération données utilisateurs
+        String username = "titi";
+        String password = "toto";
+        if (idUser.getText() != null & !(idUser.getText().trim().isEmpty())) {
             username = idUser.getText();
-        }
-        else{
+            password = passwdUser.getText();
+        } else {
             username = "tp.crypto.mail89";
         }
-        System.out.println("Utilisateur : "+username+"\nMot de passe : "+password);
+        System.out.println("Utilisateur : " + username + "\nMot de passe : " + password);
         System.out.println("Utilisateur connecté...");
 
-        //Charge seconde scène 
+        // Charge seconde scène
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/mainscene.fxml"));
         root = loader.load();
 
-        //Appel du controller MainController
+        // Appel du controller MainController
         MainController mainController = loader.getController();
         mainController.setLogo(stage);
         mainController.displayWelcomeLabel(username);
         mainController.setUsername(username);
+        mainController.setPassword(password);
         mainController.displayLogo(image);
 
-        //Appel de la seconde scene
+        // Appel de la seconde scene
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setTitle("Menu");
         scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
 
-
-        
     }
 
-    
-
 }
-

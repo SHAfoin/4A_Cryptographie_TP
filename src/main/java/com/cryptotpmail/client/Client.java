@@ -35,6 +35,7 @@ import com.cryptotpmail.elgamal.PairKeys;
 import com.cryptotpmail.ibe.AESCrypto;
 import com.cryptotpmail.ibe.IBEBasicIdent;
 import com.cryptotpmail.ibe.IBEcipher;
+import com.cryptotpmail.SendAttachmentInEmail;
 import com.cryptotpmail.elgamal.EXschnorsig;
 import com.cryptotpmail.elgamal.ElgamalCipher;
 
