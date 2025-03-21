@@ -1,6 +1,10 @@
 package com.cryptotpmail;
 
 import java.io.IOException;
+
+import com.cryptotpmail.client.Client;
+import com.cryptotpmail.client.ClientSessionKey;
+
 import javafx.scene.Node;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -55,24 +59,33 @@ public class StartController {
         } else {
             username = "tp.crypto.mail89";
         }
-        System.out.println("Utilisateur : " + username + "\nMot de passe : " + password);
-        System.out.println("Utilisateur connecté...");
+        ClientSessionKey sessionKey = Client.sessionParameters();
+        boolean auth = Client.authentification(username, password, sessionKey);
+        if (!auth) {
+            System.out.println("Erreur d'authentification");
+        } else {
+            System.out.println("Utilisateur : " + username + "\nMot de passe : " + password);
+            System.out.println("Utilisateur connecté...");
 
-        //Charge seconde scène 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/Fascene.fxml"));
-        root = loader.load();
+            // Charge seconde scène
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/Fascene.fxml"));
+            root = loader.load();
 
-        //Appel du controller MainController
-        FACheckingController faCheckingController = loader.getController();
-        mainController.setPassword(password);
+            // Appel du controller MainController
+            FACheckingController faCheckingController = loader.getController();
+            faCheckingController.setUsername(username);
+            faCheckingController.setPassword(password);
+            faCheckingController.setSession(sessionKey);
 
-        // Appel de la seconde scene
-        stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setTitle("Authentication");
-        faCheckingController.setLogo(stage);
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();        
+            // Appel de la seconde scene
+            stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setTitle("Authentication");
+            faCheckingController.setLogo(stage);
+            scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        }
+
     }
 
 }

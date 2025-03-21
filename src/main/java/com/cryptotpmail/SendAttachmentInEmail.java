@@ -38,7 +38,7 @@ public class SendAttachmentInEmail {
       props.put("mail.smtp.auth", "true");
       props.put("mail.smtp.starttls.enable", "true");
       props.put("mail.smtp.host", host);
-      props.put("mail.smtp.port", "25");
+      props.put("mail.smtp.port", "587");
 
       // Get the Session object.
       Session session = Session.getInstance(props,

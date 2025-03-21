@@ -27,9 +27,8 @@ import javax.mail.BodyPart;
 
 public class FetchEmailByte {
 
-   public static ArrayList<Email> fetch(String user) {
+   public static ArrayList<Email> fetch(String user, String password) {
       String host = "imap.gmail.com";
-      String password = "ztan acej xhei wvtq";
       ArrayList<Email> list = new ArrayList<Email>();
       try {
          // create properties field

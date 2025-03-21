@@ -239,7 +239,7 @@ public class MainController implements Initializable {
     }
 
     public void fetchFromServer(ActionEvent event) {
-        ArrayList<Email> mailList = FetchEmailByte.fetch(username);
+        ArrayList<Email> mailList = FetchEmailByte.fetch(username, password);
         if (mailList != null) {
             Platform.runLater(new Runnable() {
                 @Override

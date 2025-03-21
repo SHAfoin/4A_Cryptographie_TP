@@ -31,6 +31,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Decoder;
@@ -56,6 +59,7 @@ public class HttpServeur {
         // Sauvegarde des utilisateurs
         HashMap<String, String> users = new HashMap<String, String>();
         HashMap<String, String> sessions = new HashMap<String, String>();
+        HashMap<String, OTP> otp = new HashMap<String, OTP>();
 
         try {
 
@@ -163,7 +167,7 @@ public class HttpServeur {
                         byte[] bytes = new byte[Integer.parseInt(he.getRequestHeaders().getFirst("Content-length"))];
                         he.getRequestBody().read(bytes);
                         String session = he.getRequestHeaders().getFirst("Session");
-                        System.out.println("session:" + session);
+                        // System.out.println("session:" + session);
                         // System.out.println("session:" + new String(session));
                         String secret_decrypted = new String(
                                 AESCrypto.decrypt(bytes,
@@ -204,10 +208,102 @@ public class HttpServeur {
                             deuxFA = deuxFA * -1;
                         }
                         String Msg2FA = Integer.toString(deuxFA);
+                        System.out.println("Msg2FA:" + Msg2FA);
+                        otp.put(session, new OTP(Msg2FA, Instant.now().plusSeconds(60 * 5)));
                         SendAttachmentInEmail.sendMail(sendUsername, id, "OTP Code", Msg2FA,
                                 new ArrayList<File>(),
                                 sendPassword, sendUsername);
                         System.out.println("Mail OTP envoyé...");
+
+                    } catch (InvalidKeyException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (NoSuchAlgorithmException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (NoSuchPaddingException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IllegalBlockSizeException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (BadPaddingException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (UnsupportedEncodingException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+
+            server.createContext("/checkOTP", new HttpHandler() {
+
+                // REQUÊTE SUR /service SUR LE SERVEUR
+                public void handle(HttpExchange he) throws IOException {
+
+                    // RECUPERATION DE id, password, generatorElGamal, clientPubKeyElGamal DU CLIENT
+
+                    try {
+                        String content;
+                        byte[] bytes = new byte[Integer.parseInt(he.getRequestHeaders().getFirst("Content-length"))];
+                        he.getRequestBody().read(bytes);
+                        String session = he.getRequestHeaders().getFirst("Session");
+                        String secret_decrypted = new String(
+                                AESCrypto.decrypt(bytes,
+                                        decoder.decode(sessions.get(session))));
+                        System.out.println("secret_decrypted:" + secret_decrypted);
+
+                        String id = secret_decrypted.split(",")[0];
+                        String OTP = secret_decrypted.split(",")[1];
+
+                        System.out.println("OTP:" + OTP);
+                        System.out.println("id:" + id);
+                        Instant currentInstant = Instant.now();
+
+                        // VERIFICATION QUE L'UTILISATEUR EST BIEN ENREGISTRE
+                        if (otp.containsKey(session)) {
+
+                            if (!otp.get(session).getOtp().equals(OTP)
+                                    || currentInstant.isAfter(otp.get(session).getTimestamp())) { // SI LE MOT DE PASSE
+                                                                                                  // EST FAUX
+                                he.sendResponseHeaders(401, -1);
+                                return;
+                            }
+
+                        } else { // SINON L'ENREGISTRER
+                            he.sendResponseHeaders(401, -1);
+                            return;
+
+                        }
+
+                        // GENERATION DE LA CLE IBE DU CLIENT
+                        KeyPair Kp = IBEBasicIdent.keygen(pairingIBE, param.getMsk(), id);
+                        byte[] skBytes = Kp.getSk().toBytes();
+                        byte[] skBytesBase64 = encoder.encode(skBytes);
+
+                        // ENVOI DE LA REPONSE AU CLIENT
+                        byte[] ibePBase64 = encoder.encode(param.getP().toBytes());
+                        byte[] ibePpubBase64 = encoder.encode(param.getP_pub().toBytes());
+
+                        byte[] message = new byte[ibePBase64.length + ibePpubBase64.length + skBytesBase64.length + 2];
+                        System.arraycopy(ibePBase64, 0, message, 0, ibePBase64.length);
+                        System.arraycopy(",".getBytes(), 0, message, ibePBase64.length, ",".getBytes().length);
+                        System.arraycopy(ibePpubBase64, 0, message, ibePBase64.length + 1, ibePpubBase64.length);
+                        System.arraycopy(",".getBytes(), 0, message, ibePBase64.length + 1 + ibePpubBase64.length,
+                                ",".getBytes().length);
+                        System.arraycopy(skBytesBase64, 0, message,
+                                ibePBase64.length + 1 + ibePpubBase64.length + 1,
+                                skBytesBase64.length);
+
+                        byte[] message_encrypted = com.cryptotpmail.elgamal.AESCrypto.encryptV2(message,
+                                decoder.decode(sessions.get(session)));
+
+                        he.sendResponseHeaders(200, message_encrypted.length);
+                        OutputStream os = he.getResponseBody();
+                        os.write(message_encrypted);
+                        os.close();
 
                     } catch (InvalidKeyException e) {
                         // TODO Auto-generated catch block

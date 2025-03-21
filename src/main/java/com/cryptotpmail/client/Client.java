@@ -57,7 +57,7 @@ public class Client {
         String id = "bcd.saltel@gmail.com";
         String password = "azerty";
 
-        ClientSessionKey sessionKey = sessionParameters(pairingIBE, id, password);
+        ClientSessionKey sessionKey = sessionParameters();
 
         boolean test = authentification(id, password, sessionKey);
 
@@ -95,7 +95,6 @@ public class Client {
 
     public static boolean authentification(String id, String password, ClientSessionKey session) {
         Encoder encoder = Base64.getEncoder();
-        Decoder decoder = Base64.getDecoder();
 
         try {
 
@@ -123,7 +122,6 @@ public class Client {
 
             int code = urlConn.getResponseCode();
 
-            System.out.println(code == 200);
             return code == 200;
 
         } catch (MalformedURLException ex) {
@@ -151,8 +149,88 @@ public class Client {
         return false;
     }
 
+    public static ClientIBEParams checkOTP(String id, String otp, ClientSessionKey session) {
+        Pairing pairingIBE = PairingFactory.getPairing("curves\\a.properties");
+        Encoder encoder = Base64.getEncoder();
+        Decoder decoder = Base64.getDecoder();
+
+        int code;
+        try {
+            URL url = new URI("http://localhost:8080/checkOTP").toURL();
+            HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoInput(true);
+            urlConn.setDoOutput(true);
+            urlConn.setRequestProperty("Session", new String(encoder.encode(session.getSessionID())));
+            OutputStream out = urlConn.getOutputStream();
+
+            byte[] message = new byte[id.getBytes().length + otp.getBytes().length + 1];
+            System.arraycopy(id.getBytes(), 0, message, 0, id.getBytes().length);
+            System.arraycopy(",".getBytes(), 0, message, id.getBytes().length, 1);
+            System.arraycopy(otp.getBytes(), 0, message, id.getBytes().length + 1, otp.getBytes().length);
+
+            byte[] message_encrypted = com.cryptotpmail.elgamal.AESCrypto.encryptV2(message,
+                    session.getAesKey());
+
+            out.write(message_encrypted);
+            out.close();
+
+            InputStream dis = urlConn.getInputStream();
+            int contentLength = urlConn.getContentLength();
+            byte[] b = new byte[contentLength];
+            int bytesRead = 0;
+            while (bytesRead < contentLength) {
+                int result = dis.read(b, bytesRead, contentLength - bytesRead);
+                if (result == -1)
+                    break;
+                bytesRead += result;
+            }
+
+            // System.out.println(content);
+            code = urlConn.getResponseCode();
+
+            if (code == 200) {
+                System.out.println("OTP Validé");
+                String content = new String(
+                        AESCrypto.decrypt(b,
+                                session.getAesKey()));
+
+                Element ibeP = pairingIBE.getG1().newElementFromBytes(decoder.decode(content.split(",")[0]));
+                Element ibePpub = pairingIBE.getG1().newElementFromBytes(decoder.decode(content.split(",")[1]));
+                String skBytesBase64_retrieved = content.split(",")[2];
+                byte[] skBytes_retrieved = decoder.decode(skBytesBase64_retrieved);
+
+                Element sk_retrieved = pairingIBE.getG1().newElementFromBytes(skBytes_retrieved);
+                return new ClientIBEParams(ibeP, ibePpub, sk_retrieved);
+            } else {
+                System.out.println("OTP Invalide");
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     // Authentification et récupération des paramètres de chiffrement
-    public static ClientSessionKey sessionParameters(Pairing pairingIBE, String id, String password) {
+    public static ClientSessionKey sessionParameters() {
         // PAIRING DU ELGAMAL
         Pairing pairingElGamal = PairingFactory.getPairing("curves/d159.properties");
 
@@ -165,21 +243,15 @@ public class Client {
             PairKeys pairkeysElGamal = EXschnorsig.keygen(pairingElGamal, generatorElGamal); // keygen
 
             URL url = new URI("http://localhost:8080/sessionkey").toURL();
-            // URL url = new URL("https://www.google.com");
 
             URLConnection urlConn = url.openConnection();
             urlConn.setDoInput(true);
             urlConn.setDoOutput(true);
             OutputStream out = urlConn.getOutputStream();
 
-            // byte[] hashBase64 = hashSHA256Base64(password);
             byte[] generatorElGamalBase64 = encoder.encode(generatorElGamal.toBytes());
             byte[] pubKeyElGamalBase64 = encoder.encode(pairkeysElGamal.getPubkey().toBytes());
 
-            // out.write(id.getBytes());
-            // out.write(",".getBytes());
-            // out.write(hashBase64);
-            // out.write(",".getBytes());
             out.write(generatorElGamalBase64);
             out.write(",".getBytes());
             out.write(pubKeyElGamalBase64);
@@ -207,43 +279,9 @@ public class Client {
                     generatorElGamal, cypherElgamal,
                     pairkeysElGamal.getSecretkey());
 
-            // byte[] skBytes_retrieved = decoder.decode(message_retrieved);
-            // Element sk_retrieved =
-            // pairingIBE.getG1().newElementFromBytes(skBytes_retrieved);
-
             System.out.println("Message retrieved: " + message_retrieved);
             return new ClientSessionKey(decoder.decode(message_retrieved.split(",")[0]),
                     decoder.decode(message_retrieved.split(",")[1]));
-
-            // boolean isAuth = Boolean.parseBoolean(content.split(",")[0]);
-            // if (isAuth) {
-            // System.out.println("Authentification réussie");
-
-            // Element ibeP =
-            // pairingIBE.getG1().newElementFromBytes(decoder.decode(content.split(",")[1]));
-            // Element ibePpub =
-            // pairingIBE.getG1().newElementFromBytes(decoder.decode(content.split(",")[2]));
-            // Element u =
-            // pairingElGamal.getG1().newElementFromBytes(decoder.decode(content.split(",")[3]));
-            // Element v =
-            // pairingElGamal.getG1().newElementFromBytes(decoder.decode(content.split(",")[4]));
-            // byte[] AESciphertext = decoder.decode(content.split(",")[5]);
-
-            // ElgamalCipher cypherElgamal = new ElgamalCipher(u, v, AESciphertext);
-
-            // String skBytesBase64_retrieved = EXschnorsig.elGamaldec(pairingElGamal,
-            // generatorElGamal, cypherElgamal,
-            // pairkeysElGamal.getSecretkey());
-            // byte[] skBytes_retrieved = decoder.decode(skBytesBase64_retrieved);
-            // Element sk_retrieved =
-            // pairingIBE.getG1().newElementFromBytes(skBytes_retrieved);
-
-            // return new ClientIBEParams(ibeP, ibePpub, sk_retrieved);
-
-            // } else {
-            // System.out.println("Authentification échouée.");
-            // return null;
-            // }
 
         } catch (MalformedURLException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);

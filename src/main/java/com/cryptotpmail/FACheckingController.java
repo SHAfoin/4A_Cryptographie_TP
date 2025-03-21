@@ -2,6 +2,10 @@ package com.cryptotpmail;
 
 import java.io.IOException;
 
+import com.cryptotpmail.client.Client;
+import com.cryptotpmail.client.ClientIBEParams;
+import com.cryptotpmail.client.ClientSessionKey;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,7 +23,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class FACheckingController {
-    
 
     @FXML
     private PasswordField authenticationField;
@@ -37,10 +40,10 @@ public class FACheckingController {
     private Parent root;
 
     private Image image = new Image(getClass().getResourceAsStream("logo.png"));
-    String username, Fafield;
+    String username, Fafield, password;
+    ClientSessionKey session;
 
-    
-    // Fonctions 
+    // Fonctions
     // Personnalise le logo de l'interface
     public void setLogo(Stage stage) {
         try {
@@ -50,6 +53,15 @@ public class FACheckingController {
             System.out.println("Erreur lors du chargement du logo : " + e.getMessage());
         }
     }
+
+    public ClientSessionKey getSession() {
+        return session;
+    }
+
+    public void setSession(ClientSessionKey session) {
+        this.session = session;
+    }
+
     @FXML
     public void setColorBackground(Color color) {
         pane.setBackground(new Background(new BackgroundFill(color, null, null)));
@@ -60,29 +72,39 @@ public class FACheckingController {
         this.username = user;
     }
 
-    public void FaCheck(ActionEvent event) throws IOException{
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void FaCheck(ActionEvent event) throws IOException {
         Fafield = authenticationField.getText();
-        if (Fafield.equals("toto")){
+        ClientIBEParams client = Client.checkOTP(username, Fafield, session);
+        if (client != null) {
             System.out.println("Utilisateur connecté...");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/mainscene.fxml"));
-            Parent root  = loader.load();
-            //Appel du controller MainController
+            Parent root = loader.load();
+            // Appel du controller MainController
             MainController mainController = loader.getController();
             mainController.displayWelcomeLabel(username);
             mainController.setUsername(username);
+            mainController.setPassword(password);
             mainController.displayLogo(image);
 
-            //Appel de la seconde scene
+            // Appel de la seconde scene
             stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setTitle("Menu");
             mainController.setLogo(stage);
             scene = new Scene(root);
             stage.setScene(scene);
             stage.show();
-        }
-        else{
+        } else {
             authenticationField.setText("");
             resultFALabel.setText("Authentication failed..");
         }
     }
+
 }

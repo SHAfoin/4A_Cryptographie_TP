@@ -178,6 +178,8 @@ public class SendMailController {
         MainController mainController = loader.getController();
         mainController.setColorBackground(color);
         mainController.displayLogo(image);
+        mainController.setUsername(username);
+        mainController.setPassword(password);
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setTitle("Menu");
         scene = new Scene(root);
