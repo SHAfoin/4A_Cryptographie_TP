@@ -7,16 +7,10 @@ package com.cryptotpmail.elgamal;
 
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
-import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -72,9 +66,9 @@ public class EXschnorsig {
             Element plain = c.getV().duplicate().sub(u_p); // clef symmetrique retrouvée
             System.out.println("retrievd key=" + plain);
 
-            String plainmessage = AESCrypto.decrypt(c.getAESciphertext(), plain.toBytes());
+            byte[] plainmessage = AESCrypto.decrypt(c.getAESciphertext(), plain.toBytes());
 
-            return plainmessage;
+            return new String(plainmessage);
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(EXschnorsig.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
@@ -89,78 +83,5 @@ public class EXschnorsig {
             Logger.getLogger(EXschnorsig.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-    }
-
-    public static void messageEncryption_decryptiondemo(String message, Pairing pairing, Element generator,
-            PairKeys pairkeys) {
-
-        try {
-            System.out.println("bytelenght:" + message.getBytes().length);
-
-            ElgamalCipher c = elGamalencr(pairing, generator, message.getBytes("UTF-8"), pairkeys.getPubkey());
-
-            System.out.println("the message is: \n" + elGamaldec(pairing, generator, c, pairkeys.getSecretkey()));
-
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(EXschnorsig.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    public static void fileEncryption_decryptiondemo(String filepath, Pairing pairing, Element generator,
-            PairKeys pairkeys) {
-
-        try {
-            FileInputStream in = new FileInputStream(filepath);
-
-            byte[] filebytes = new byte[in.available()];
-
-            System.out.println("taille de fichier en byte:" + filebytes.length);
-
-            in.read(filebytes);
-
-            System.out.println("bytelenght:" + filepath.getBytes().length);
-
-            String message = new String(filebytes);
-
-            ElgamalCipher c = elGamalencr(pairing, generator, message.getBytes("UTF-8"), pairkeys.getPubkey());
-
-            String retrived_message = elGamaldec(pairing, generator, c, pairkeys.getSecretkey());
-
-            System.out.println("the decrypted message is: \n" + retrived_message);
-
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(EXschnorsig.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(EXschnorsig.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(EXschnorsig.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-  
-        // Pairing pairing = PairingFactory.getPairing("curves/d159.properties"); //chargement des paramètres de la courbe elliptique  
-        //                                                                 //(replacer "curveParamsd159" par un chemin vers le fichier de configuration de la courbe)
-        // Element generator=pairing.getG1().newRandomElement(); //génerateur
-   
-        // PairKeys pairkeys=keygen(pairing, generator); //keygen
-     
-        // //test chiffrement, déchiffrement, signature et vérification
-        // fileEncryption_decryptiondemo("D:\\INSA\\4A ICY\\Cryptographie Avancée\\TP\\cryptotpmail\\src\\main\\java\\com\\cryptotpmail\\elgamal\\filetoencrypt.txt", pairing, generator, pairkeys);
-        
-        byte[] key="azerty".getBytes();
-        MessageDigest digest=MessageDigest.getInstance("SHA256");
-        digest.update(key);
-        byte[] hash = digest.digest(); // Calcul du hash
-
-        // Convertir le hash en format hexadécimal pour affichage
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            hexString.append(String.format("%02x", b));
-        }
-
-        System.out.println("Hash SHA-256 : " + hexString.toString());
     }
 }

@@ -1,14 +1,11 @@
-package com.cryptotpmail;
+package com.cryptotpmail.controllers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.crypto.BadPaddingException;
@@ -18,10 +15,11 @@ import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
-import javax.mail.Part;
 
 import com.cryptotpmail.client.Client;
 import com.cryptotpmail.client.ClientIBEParams;
+import com.cryptotpmail.mail.Email;
+import com.cryptotpmail.mail.FetchMail;
 
 import it.unisa.dia.gas.jpbc.Pairing;
 import javafx.application.Platform;
@@ -40,7 +38,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
@@ -49,11 +46,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -69,8 +62,6 @@ public class MainController implements Initializable {
     private ScrollPane scrollPane;
     @FXML
     private VBox vBox;
-    @FXML
-    private ImageView imageView;
     @FXML
     private ColorPicker colorPickerBtn;
     @FXML
@@ -89,7 +80,6 @@ public class MainController implements Initializable {
     private Email mailSelectionne;
     private ClientIBEParams clientIBE;
     private Pairing pairingIBE;
-    private ArrayList<Email> listEmail = new ArrayList<Email>();
 
     @FXML
     public void setLogo(Stage stage) {
@@ -109,12 +99,6 @@ public class MainController implements Initializable {
         this.password = password;
     }
 
-    @FXML
-    // Affiche le logo de l'interface
-    public void displayLogo(Image image) {
-        this.image = image;
-        imageView.setImage(image);
-    }
 
     @FXML
     // Change la couleur du thème
@@ -176,7 +160,7 @@ public class MainController implements Initializable {
                 String attachment = "";
                 if (newValue != null) {
                     mailSelectionne = newValue;
-                    if (mailSelectionne.getAttachment() != null) {
+                    if (!mailSelectionne.getAttachment().equals("")) {
                         attachment = "Attachment : " + mailSelectionne.getAttachment();
                     }
                     printMailLabel.setText(
@@ -188,30 +172,25 @@ public class MainController implements Initializable {
                 }
             }
         });
-        // if (!vBox.getChildren().contains(printMailLabel)) {
-        // vBox.getChildren().add(printMailLabel);
-        // }
-        // VBox vbox = new VBox(printMailLabel);
-        // vbox.setPrefWidth(scrollPane.getPrefWidth());
-        // scrollPane.setContent(vbox);
+
         scrollPane.setFitToWidth(true);
         printMailLabel.setWrapText(true);
         scrollPane.setContent(printMailLabel);
     }
 
-    // Téléchargement des pièces jointes
+    // Télécharge la pièce jointe sans décryption
     public void downloadAttachment(ActionEvent event) throws IOException, MessagingException {
         if ((mailSelectionne != null) && (!mailSelectionne.getAttachment().equals(""))) {
             Message message = FetchMail.fetchMail(mailSelectionne.getId(), username, password);
             if (message.isMimeType("multipart/MIXED")) {
                 Multipart multipart = (Multipart) message.getContent();
+                // Parcours les pièces jointes
                 for (int i = 0; i < multipart.getCount(); i++) {
                     BodyPart body = multipart.getBodyPart(i);
-                    System.out.println(body.getContentType());
+                    // Si c'est du corps de texte, on ignore
                     if (body.isMimeType("TEXT/PLAIN")) {
                         continue;
                     }
-                    System.out.println("Téléchargement pièce jointe...");
 
                     // Boîte de dialogue pour choisir l'emplacement de sauvegarde
                     FileChooser fileChooser = new FileChooser();
@@ -237,8 +216,6 @@ public class MainController implements Initializable {
                         FileOutputStream fichier = new FileOutputStream(new File(selectedFile.getAbsolutePath()));
                         fichier.write(fichierEnByte);
                         fichier.close();
-
-                        System.out.println("File written successfully!");
                         inputStream.close();
                         System.out.println("Pièce jointe téléchargée avec succès : " + selectedFile.getAbsolutePath());
                     } else {
@@ -251,19 +228,21 @@ public class MainController implements Initializable {
         }
     }
 
+    // Télécharge les pièces jointes en la décryptant
     public void uncrypt(ActionEvent event) throws IOException, MessagingException, InvalidKeyException,
             NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         if ((mailSelectionne != null) && (!mailSelectionne.getAttachment().equals(""))) {
             Message message = FetchMail.fetchMail(mailSelectionne.getId(), username, password);
             if (message.isMimeType("multipart/MIXED")) {
                 Multipart multipart = (Multipart) message.getContent();
+                // Parcours les pièces jointes
                 for (int i = 0; i < multipart.getCount(); i++) {
                     BodyPart body = multipart.getBodyPart(i);
                     System.out.println(body.getContentType());
+                    // Si cest du corps de texte, on ignore
                     if (body.isMimeType("TEXT/PLAIN")) {
                         continue;
                     }
-                    System.out.println("Téléchargement pièce jointe...");
 
                     // Boîte de dialogue pour choisir l'emplacement de sauvegarde
                     FileChooser fileChooser = new FileChooser();
@@ -294,8 +273,6 @@ public class MainController implements Initializable {
                         FileOutputStream fichier = new FileOutputStream(new File(selectedFile.getAbsolutePath()));
                         fichier.write(message_decrypte);
                         fichier.close();
-
-                        System.out.println("File written successfully!");
                         inputStream.close();
                         System.out.println("Pièce jointe téléchargée avec succès : " + selectedFile.getAbsolutePath());
                     } else {

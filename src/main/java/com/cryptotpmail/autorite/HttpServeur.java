@@ -1,18 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.cryptotpmail.autorite;
 
-import com.cryptotpmail.SendAttachmentInEmail;
-import com.cryptotpmail.client.ClientSessionKey;
 import com.cryptotpmail.elgamal.AESCrypto;
 import com.cryptotpmail.elgamal.EXschnorsig;
 import com.cryptotpmail.elgamal.ElgamalCipher;
 import com.cryptotpmail.ibe.IBEBasicIdent;
 import com.cryptotpmail.ibe.KeyPair;
 import com.cryptotpmail.ibe.SettingParameters;
+import com.cryptotpmail.mail.SendAttachmentInEmail;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -27,13 +21,10 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Decoder;
@@ -147,9 +138,8 @@ public class HttpServeur {
                         os.write(cipherBase64);
                         os.close();
 
-                    } catch (UnsupportedEncodingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
                 }
@@ -163,7 +153,6 @@ public class HttpServeur {
                     // RECUPERATION DE id, password, generatorElGamal, clientPubKeyElGamal DU CLIENT
 
                     try {
-                        String content;
                         byte[] bytes = new byte[Integer.parseInt(he.getRequestHeaders().getFirst("Content-length"))];
                         he.getRequestBody().read(bytes);
                         String session = he.getRequestHeaders().getFirst("Session");
@@ -203,7 +192,7 @@ public class HttpServeur {
                         String sendPassword = "ztan acej xhei wvtq";
                         Random random = new Random();
                         int deuxFA = random.nextInt();
-                        deuxFA = (deuxFA % 999999) + 100000;
+                        deuxFA = (deuxFA % 899999) + 100000;
                         if (deuxFA < 0) {
                             deuxFA = deuxFA * -1;
                         }
@@ -215,24 +204,18 @@ public class HttpServeur {
                                 sendPassword, null, null);
                         System.out.println("Mail OTP envoyé...");
 
-                    } catch (InvalidKeyException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (NoSuchPaddingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IllegalBlockSizeException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (BadPaddingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (UnsupportedEncodingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                    } catch (InvalidKeyException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchAlgorithmException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchPaddingException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalBlockSizeException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (BadPaddingException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
                 }
@@ -240,13 +223,12 @@ public class HttpServeur {
 
             server.createContext("/checkOTP", new HttpHandler() {
 
-                // REQUÊTE SUR /service SUR LE SERVEUR
+                // REQUÊTE SUR /ceckOTP SUR LE SERVEUR
                 public void handle(HttpExchange he) throws IOException {
 
                     // RECUPERATION DE id, password, generatorElGamal, clientPubKeyElGamal DU CLIENT
 
                     try {
-                        String content;
                         byte[] bytes = new byte[Integer.parseInt(he.getRequestHeaders().getFirst("Content-length"))];
                         he.getRequestBody().read(bytes);
                         String session = he.getRequestHeaders().getFirst("Session");
@@ -305,24 +287,18 @@ public class HttpServeur {
                         os.write(message_encrypted);
                         os.close();
 
-                    } catch (InvalidKeyException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (NoSuchAlgorithmException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (NoSuchPaddingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (IllegalBlockSizeException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (BadPaddingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (UnsupportedEncodingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                    } catch (InvalidKeyException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchAlgorithmException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchPaddingException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalBlockSizeException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (BadPaddingException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
                 }
@@ -343,9 +319,8 @@ public class HttpServeur {
             byte[] hash = digestSHA256.digest(); // Calcul du hash
             byte[] hashBase64 = encoder.encode(hash);
             return hashBase64;
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(HttpServeur.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

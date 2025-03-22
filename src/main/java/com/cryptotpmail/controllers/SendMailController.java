@@ -1,12 +1,10 @@
-package com.cryptotpmail;
+package com.cryptotpmail.controllers;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Action;
 
 import com.cryptotpmail.client.ClientIBEParams;
+import com.cryptotpmail.mail.SendAttachmentInEmail;
 
 import it.unisa.dia.gas.jpbc.Pairing;
 import javafx.event.ActionEvent;
@@ -26,9 +24,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.fxml.FXML;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import java.io.File;
 
 public class SendMailController {
@@ -57,7 +53,6 @@ public class SendMailController {
     private Color color;
     private Image image;
     private String recipient, subject, body, username = " ", password = " ";
-    private File fichierCheck;
     private ArrayList<File> listFile = new ArrayList<>();
     private ClientIBEParams clientIBE;
     private Pairing pairingIBE;
@@ -131,12 +126,6 @@ public class SendMailController {
     public void chargeFile(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
 
-        // // Optionnel : Définir une extension de fichier par défaut (ex: images, txt,
-        // etc.)
-        // fileChooser.getExtensionFilters().add(
-        // new FileChooser.ExtensionFilter("Fichiers texte (*.txt)", "*.txt")
-        // );
-
         // Ouvrir la boîte de dialogue
         Stage stage = new Stage(); // Remplace par une référence existante si possible
         File fichier = fileChooser.showOpenDialog(stage);
@@ -150,7 +139,6 @@ public class SendMailController {
                 System.out.println("Fichier déjà ajouté !");
             }
             fileLabel.setText(printListFile(listFile));
-            fichierCheck = fichier;
         }
 
     }
@@ -172,28 +160,19 @@ public class SendMailController {
                 System.out.println("Message vide...");
             }
         } else {
+            // Envoie le mail encrypté
             SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile,
                     password, pairingIBE, clientIBE);
-            // System.out.println("Envoyé par : "+username);
-            // System.out.println("Destinataire : "+recipient);
-            // System.out.println("Sujet : "+subject);
-            // if (!listFile.isEmpty()){
-            // System.out.println("Pièce jointe : "+printListFile(listFile));
-            // }
-            // System.out.println("Message : "+body);
-            // System.out.println("Mail envoyé...");
-            this.cancelSending(event);
+            this.goMenu(event);
         }
     }
 
     @FXML
-    public void cancelSending(ActionEvent event) throws IOException {
-        System.out.println(">>>Retour au menu principal...");
+    public void goMenu(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/mainscene.fxml"));
         Parent root = loader.load();
         MainController mainController = loader.getController();
         mainController.setColorBackground(color);
-        mainController.displayLogo(image);
         mainController.setUsername(username);
         mainController.setPassword(password);
         mainController.setClientIBE(clientIBE);

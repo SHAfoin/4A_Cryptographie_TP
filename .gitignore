@@ -1,4 +1,6 @@
 *.py
 *.pdf
+*.txt
 *.class
 .vscode/
+target/

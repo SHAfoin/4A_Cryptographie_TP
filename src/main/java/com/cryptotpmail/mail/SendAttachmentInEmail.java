@@ -1,11 +1,7 @@
-package com.cryptotpmail;
+package com.cryptotpmail.mail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
@@ -17,7 +13,6 @@ import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -44,16 +39,17 @@ public class SendAttachmentInEmail {
          String password, Pairing pairingIBE, ClientIBEParams client)
          throws IOException {
 
-      // Assuming you are sending email through relay.jangosmtp.net
+      // Défini l'adresse du serveur
       String host = "smtp.gmail.com";
 
       Properties props = new Properties();
       props.put("mail.smtp.auth", "true");
       props.put("mail.smtp.starttls.enable", "true");
       props.put("mail.smtp.host", host);
+      // port 25 pour le smtp "classique", 587 pour le smtp Secure
       props.put("mail.smtp.port", "587");
 
-      // Get the Session object.
+      // Crée une session
       Session session = Session.getInstance(props,
             new javax.mail.Authenticator() {
                protected PasswordAuthentication getPasswordAuthentication() {
@@ -65,53 +61,37 @@ public class SendAttachmentInEmail {
          // Create a default MimeMessage object.
          Message message = new MimeMessage(session);
 
-         // Set From: header field of the header.
+         // Set From: Emetteur
          message.setFrom(new InternetAddress(from));
 
-         // Set To: header field of the header.
+         // Set To: Destinataire
          message.setRecipients(Message.RecipientType.TO,
                InternetAddress.parse(to));
 
-         // Set Subject: header field
+         // Set Subject: Sujet
          message.setSubject(subject);
 
-         // Create the message part
+         // Corps du mail
          BodyPart messageBodyPart = new MimeBodyPart();
-
-         // Now set the actual message
          messageBodyPart.setText(body);
 
-         // Create a multipar message
+         // Pour pouvoir ajouter des pièces jointes, on utilise un corps avec plusieurs
+         // parties
          Multipart multipart = new MimeMultipart();
 
-         // Set text message part
+         // Ajoute le texte ay mail
          multipart.addBodyPart(messageBodyPart);
 
-         // Part two is attachment
-         /*
-          * File fichier_to_byte = new File(filename);
-          * FileInputStream fluxBinaire = new FileInputStream(fichier_to_byte);
-          * ByteArrayOutputStream ByteOutput = new ByteArrayOutputStream(); //Va stocker
-          * la donnée en mémoire
-          * byte[] buffer = new byte[1024];
-          * int byteLu;
-          * while((byteLu = fluxBinaire.read(buffer)) != -1){
-          * ByteOutput.write(buffer,0,byteLu);
-          * }
-          * 
-          * fluxBinaire.close()
-          * byte [] fichier_byte = ByteOutput.toByteArray();
-          */
-
+         // Parcours les pièces jointes
          for (File file : listfile) {
             String filename = file.getName();
             byte[] fileToSend;
 
             if (pairingIBE == null || client == null) {
+               // Dans le cas où il n'y aurait pas le necessaire pour le chiffrement
                fileToSend = Files.readAllBytes(file.toPath());
-               System.out.println("yes");
+               System.out.println("Attention: Message non chiffré !");
             } else {
-
                fileToSend = Client.encrypt_file_IBE(pairingIBE, client.getP(),
                      client.getP_pub(), Files.readAllBytes(file.toPath()),
                      to);
@@ -151,24 +131,19 @@ public class SendAttachmentInEmail {
       } catch (MessagingException e) {
          throw new RuntimeException(e);
       } catch (MalformedURLException ex) {
-         Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+         Logger.getLogger(SendAttachmentInEmail.class.getName()).log(Level.SEVERE, null, ex);
       } catch (IOException ex) {
-         Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-      } catch (InvalidKeyException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (NoSuchAlgorithmException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (NoSuchPaddingException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (IllegalBlockSizeException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (BadPaddingException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
+         Logger.getLogger(SendAttachmentInEmail.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (InvalidKeyException ex) {
+         Logger.getLogger(SendAttachmentInEmail.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (NoSuchAlgorithmException ex) {
+         Logger.getLogger(SendAttachmentInEmail.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (NoSuchPaddingException ex) {
+         Logger.getLogger(SendAttachmentInEmail.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (IllegalBlockSizeException ex) {
+         Logger.getLogger(SendAttachmentInEmail.class.getName()).log(Level.SEVERE, null, ex);
+      } catch (BadPaddingException ex) {
+         Logger.getLogger(SendAttachmentInEmail.class.getName()).log(Level.SEVERE, null, ex);
       }
    }
 }

@@ -1,10 +1,8 @@
-package com.cryptotpmail;
+package com.cryptotpmail.mail;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -23,13 +21,9 @@ public class Email {
     private String attachment;
     private LocalDateTime timestamp;
 
-    // Constructeur
-    public Email() {
-
-    }
-
     // Constructeur sans pièce jointe
-    public Email(String sender, String recipient, String subject, String body) {
+    public Email(int id, String sender, String recipient, String subject, String body) {
+        this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.subject = subject;
@@ -39,7 +33,8 @@ public class Email {
     }
 
     // Constructeur avec pièce jointe
-    public Email(String sender, String recipient, String subject, String body, String attachment) {
+    public Email(int id, String sender, String recipient, String subject, String body, String attachment) {
+        this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.subject = subject;
@@ -48,17 +43,23 @@ public class Email {
         this.timestamp = LocalDateTime.now(); // Date et heure d'envoi
     }
 
+    // Constructeur à partir du type Message de Java Mail
     public Email(Message message) throws MessagingException, IOException {
+        // ID du mail pour récuperer le message correspondant plus facilement
         this.id = message.getMessageNumber();
+        // Expediteurs du mail
         this.sender = "";
         for (Address address : message.getFrom()) {
             this.sender += address.toString() + ";";
         }
+        // Destinataires du mail
         this.recipient = "";
         for (Address address : message.getAllRecipients()) {
             this.sender += address.toString() + ";";
         }
         this.subject = message.getSubject();
+
+        // Le corps et les pièces jointes sont vides
         this.body = "";
         this.attachment = "";
         if (message.isMimeType("multipart/MIXED")) {
@@ -66,9 +67,11 @@ public class Email {
             for (int i = 0; i < multipart.getCount(); i++) {
                 BodyPart body = multipart.getBodyPart(i);
                 if (Part.ATTACHMENT.equalsIgnoreCase(body.getDisposition())) {
+                    // C'est une pièce jointe
                     String filename = body.getFileName();
                     this.attachment += filename + ";";
                 } else {
+                    // C'est du corps de texte
                     this.body += body.getContent().toString();
                 }
             }
@@ -76,7 +79,6 @@ public class Email {
         this.timestamp = message.getReceivedDate().toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
-        System.out.println(this.id);
     }
 
     // Getters
@@ -125,31 +127,22 @@ public class Email {
         this.body = body;
     }
 
-    public void setAttachment(File file) {
+    public void setAttachment(String attachment) {
         this.attachment = attachment;
     }
 
     // Méthode pour afficher les détails de l'email
     @Override
     public String toString() {
-        if (attachment != null) {
+        if (!attachment.equals("")) {
             return sender + "\t\t\t  attachment\t"
-                    + timestamp.of(timestamp.getYear(), timestamp.getMonth(), timestamp.getDayOfMonth(), 0, 0) + "\n"
+                    + LocalDateTime.of(timestamp.getYear(), timestamp.getMonth(), timestamp.getDayOfMonth(), 0, 0)
+                    + "\n"
                     + body;
         }
         return sender + "\t\t\t\t\t\t"
-                + timestamp.of(timestamp.getYear(), timestamp.getMonth(), timestamp.getDayOfMonth(), 0, 0) + "\n"
+                + LocalDateTime.of(timestamp.getYear(), timestamp.getMonth(), timestamp.getDayOfMonth(), 0, 0) + "\n"
                 + body;
-        // return "Email{" +
-        // "De='" + sender + '\'' +
-        // ", À='" + recipient + '\'' +
-        // ", Sujet='" + subject + '\'' +
-        // ", Contenu='" + body + '\'' +
-        // ", Envoyé le=" + timestamp +
-        // '}';
+
     }
-    // @Override
-    // public String affichageMail(){
-    // return "From : "+sender+"\tSend at "+timestamp.toString();
-    // }
 }

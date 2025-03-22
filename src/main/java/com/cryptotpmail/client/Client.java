@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.cryptotpmail.client;
 
-import java.io.File;
+
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,10 +26,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import com.cryptotpmail.elgamal.PairKeys;
-import com.cryptotpmail.ibe.AESCrypto;
+import com.cryptotpmail.elgamal.AESCrypto;
 import com.cryptotpmail.ibe.IBEBasicIdent;
 import com.cryptotpmail.ibe.IBEcipher;
-import com.cryptotpmail.SendAttachmentInEmail;
 import com.cryptotpmail.elgamal.EXschnorsig;
 import com.cryptotpmail.elgamal.ElgamalCipher;
 
@@ -44,34 +37,6 @@ import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import it.unisa.dia.gas.jpbc.Element;
 
 public class Client {
-
-    public static void main(String[] args) {
-
-        // PAIRING DU IBE
-        Pairing pairingIBE = PairingFactory.getPairing("curves\\a.properties");
-
-        String id = "bcd.saltel@gmail.com";
-        String password = "azerty";
-
-        ClientSessionKey sessionKey = sessionParameters();
-
-        boolean test = authentification(id, password, sessionKey);
-
-        // Si null, redemander password côté interface
-
-        // String filepath = "D:\\INSA\\4A ICY\\Cryptographie
-        // Avancée\\TP\\cryptotpmail\\src\\main\\java\\com\\cryptotpmail\\elgamal\\filetoencrypt.txt";
-        // String filename = filepath.substring(filepath.lastIndexOf("\\") + 1);
-
-        // // ENCRYPTION IBE
-        // byte[] ibecipher = encrypt_file_IBE(pairingIBE, client.getP(),
-        // client.getP_pub(), filepath, id);
-
-        // // DECRYPTION FICHIER IBE
-        // decrypt_file_IBE(pairingIBE, client.getP(), client.getP_pub(),
-        // filename, client.getSk(), ibecipher);
-
-    }
 
     // Hashage SHA256
     public static byte[] hashSHA256Base64(String password) {
@@ -82,9 +47,8 @@ public class Client {
             byte[] hash = digestSHA256.digest(); // Calcul du hash
             byte[] hashBase64 = encoder.encode(hash);
             return hashBase64;
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -93,9 +57,8 @@ public class Client {
         Encoder encoder = Base64.getEncoder();
 
         try {
-
+            // Adresse du serveur
             URL url = new URI("http://localhost:8080/authentification").toURL();
-            // URL url = new URL("https://www.google.com");
 
             HttpURLConnection urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoInput(true);
@@ -124,23 +87,18 @@ public class Client {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
     }
@@ -200,27 +158,20 @@ public class Client {
             } else {
                 System.out.println("OTP Invalide");
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
