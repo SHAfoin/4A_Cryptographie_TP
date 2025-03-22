@@ -6,6 +6,8 @@ import com.cryptotpmail.client.Client;
 import com.cryptotpmail.client.ClientIBEParams;
 import com.cryptotpmail.client.ClientSessionKey;
 
+import it.unisa.dia.gas.jpbc.Pairing;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -83,6 +85,7 @@ public class FACheckingController {
     public void FaCheck(ActionEvent event) throws IOException {
         Fafield = authenticationField.getText();
         ClientIBEParams client = Client.checkOTP(username, Fafield, session);
+        Pairing pairingIBE = PairingFactory.getPairing("curves\\a.properties");
         if (client != null) {
             System.out.println("Utilisateur connecté...");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/mainscene.fxml"));
@@ -93,6 +96,8 @@ public class FACheckingController {
             mainController.setUsername(username);
             mainController.setPassword(password);
             mainController.displayLogo(image);
+            mainController.setClientIBE(client);
+            mainController.setPairingIBE(pairingIBE);
 
             // Appel de la seconde scene
             stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

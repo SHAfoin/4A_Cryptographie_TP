@@ -99,9 +99,7 @@ public class SendMailController {
 
     // Récupère la couleur du background
     public void setColorBackground(Color color) {
-    public void setPassword(String password) {
-        this.password = password;
-    }
+
         this.color = color;
         pane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
@@ -174,8 +172,8 @@ public class SendMailController {
                 System.out.println("Message vide...");
             }
         } else {
-            SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile, pairingIBE, clientIBE,
-                    password);
+            SendAttachmentInEmail.sendMail(username, recipient, subject, body, listFile,
+                    password, pairingIBE, clientIBE);
             // System.out.println("Envoyé par : "+username);
             // System.out.println("Destinataire : "+recipient);
             // System.out.println("Sujet : "+subject);

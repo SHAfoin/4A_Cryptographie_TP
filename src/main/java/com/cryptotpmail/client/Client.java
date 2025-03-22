@@ -337,7 +337,7 @@ public class Client {
                                                                                   // BasicID-IBE/AES
     }
 
-    public static void decrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, String filename,
+    public static byte[] decrypt_file_IBE(Pairing pairingIBE, Element param_p, Element param_p_pub, String filename,
             Element sk, byte[] encrypted) throws InvalidKeyException, NoSuchAlgorithmException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 
@@ -360,15 +360,6 @@ public class Client {
                                                                                                // IBE/AES
 
         byte[] messageBytes_retrieved = AESCrypto.decrypt(file_encrypted_bytes, aes_key); // déchiffrement AES
-        File f = new File("decrypted_" + filename); // création d'un fichier pour l'enregistrement du résultat du
-                                                    // déchiffrement
-
-        f.createNewFile();
-
-        FileOutputStream fout = new FileOutputStream(f);
-
-        fout.write(messageBytes_retrieved); // ecriture du résultat de déchiffrement dans le fichier
-
-        fout.close();
+        return messageBytes_retrieved;
     }
 }

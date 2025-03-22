@@ -41,7 +41,7 @@ import it.unisa.dia.gas.jpbc.Pairing;
 
 public class SendAttachmentInEmail {
    public static void sendMail(String from, String to, String subject, String body, ArrayList<File> listfile,
-         Pairing pairingIBE, ClientIBEParams client, String password)
+         String password, Pairing pairingIBE, ClientIBEParams client)
          throws IOException {
 
       // Assuming you are sending email through relay.jangosmtp.net
@@ -105,15 +105,23 @@ public class SendAttachmentInEmail {
 
          for (File file : listfile) {
             String filename = file.getName();
-            byte[] fichierEnByte = Files.readAllBytes(file.toPath());
-            byte[] ibecipher = Client.encrypt_file_IBE(pairingIBE, client.getP(), client.getP_pub(), fichierEnByte,
-                  from);
+            byte[] fileToSend;
+
+            if (pairingIBE == null || client == null) {
+               fileToSend = Files.readAllBytes(file.toPath());
+               System.out.println("yes");
+            } else {
+
+               fileToSend = Client.encrypt_file_IBE(pairingIBE, client.getP(),
+                     client.getP_pub(), Files.readAllBytes(file.toPath()),
+                     to);
+            }
 
             String mimeType = Files.probeContentType(file.toPath());
             if (mimeType == null) {
                mimeType = "application/octet-stream";
             }
-            DataSource source = new ByteArrayDataSource(ibecipher, mimeType);
+            DataSource source = new ByteArrayDataSource(fileToSend, mimeType);
             MimeBodyPart piecejointe = new MimeBodyPart();
             piecejointe.setDataHandler(new DataHandler(source));
             piecejointe.setFileName(filename);

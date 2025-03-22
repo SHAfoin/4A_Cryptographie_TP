@@ -1,5 +1,6 @@
 package com.cryptotpmail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,6 +53,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -132,10 +134,6 @@ public class MainController implements Initializable {
 
     public void setPairingIBE(Pairing pairingIBE) {
         this.pairingIBE = pairingIBE;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     // Affiche l'id de l'utilisateur
@@ -229,9 +227,18 @@ public class MainController implements Initializable {
 
                     if (selectedFile != null) {
                         InputStream inputStream = body.getInputStream();
-                        FileOutputStream outStream = new FileOutputStream(selectedFile);
-                        outStream.write(inputStream.readAllBytes());
-                        outStream.close();
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        byte[] data = new byte[1024];
+                        int byteLu;
+                        while ((byteLu = inputStream.read(data, 0, data.length)) != -1) {
+                            buffer.write(data, 0, byteLu);
+                        }
+                        byte[] fichierEnByte = buffer.toByteArray();
+                        FileOutputStream fichier = new FileOutputStream(new File(selectedFile.getAbsolutePath()));
+                        fichier.write(fichierEnByte);
+                        fichier.close();
+
+                        System.out.println("File written successfully!");
                         inputStream.close();
                         System.out.println("Pièce jointe téléchargée avec succès : " + selectedFile.getAbsolutePath());
                     } else {
@@ -272,8 +279,23 @@ public class MainController implements Initializable {
 
                     if (selectedFile != null) {
                         InputStream inputStream = body.getInputStream();
-                        Client.decrypt_file_IBE(pairingIBE, clientIBE.getP(), clientIBE.getP_pub(),
-                                selectedFile.getAbsolutePath(), clientIBE.getSk(), inputStream.readAllBytes());
+
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        byte[] data = new byte[1024];
+                        int byteLu;
+                        while ((byteLu = inputStream.read(data, 0, data.length)) != -1) {
+                            buffer.write(data, 0, byteLu);
+                        }
+                        byte[] fichierEnByte = buffer.toByteArray();
+                        byte[] message_decrypte = Client.decrypt_file_IBE(pairingIBE, clientIBE.getP(),
+                                clientIBE.getP_pub(),
+                                selectedFile.getAbsolutePath(), clientIBE.getSk(),
+                                fichierEnByte);
+                        FileOutputStream fichier = new FileOutputStream(new File(selectedFile.getAbsolutePath()));
+                        fichier.write(message_decrypte);
+                        fichier.close();
+
+                        System.out.println("File written successfully!");
                         inputStream.close();
                         System.out.println("Pièce jointe téléchargée avec succès : " + selectedFile.getAbsolutePath());
                     } else {
@@ -307,6 +329,8 @@ public class MainController implements Initializable {
         if (sendMailController == null) {
             System.out.println("controlleur null");
         }
+        System.out.println("client : " + clientIBE);
+        System.out.println("pairing : " + pairingIBE);
         // Envoie à la classe SendMailController le nom de l'utilisateur
         sendMailController.setUser(username);
         sendMailController.setPassword(password);

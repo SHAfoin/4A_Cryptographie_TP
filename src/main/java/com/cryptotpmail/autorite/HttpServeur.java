@@ -212,7 +212,7 @@ public class HttpServeur {
                         otp.put(session, new OTP(Msg2FA, Instant.now().plusSeconds(60 * 5)));
                         SendAttachmentInEmail.sendMail(sendUsername, id, "OTP Code", Msg2FA,
                                 new ArrayList<File>(),
-                                sendPassword, sendUsername);
+                                sendPassword, null, null);
                         System.out.println("Mail OTP envoyé...");
 
                     } catch (InvalidKeyException e) {

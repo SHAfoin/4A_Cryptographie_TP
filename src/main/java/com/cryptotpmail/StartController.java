@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.cryptotpmail.client.Client;
 import com.cryptotpmail.client.ClientIBEParams;
+import com.cryptotpmail.client.ClientSessionKey;
 
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
