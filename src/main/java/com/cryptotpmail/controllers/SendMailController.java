@@ -44,7 +44,7 @@ public class SendMailController {
     @FXML
     private ScrollPane scrollPane;
     @FXML
-    private Label fileLabel;
+    private Label fileLabel, contentLabel, attachmentalreadyloadedLabel;
     @FXML
     private ImageView imageView;
     @FXML
@@ -61,6 +61,7 @@ public class SendMailController {
     public void setLogo(Stage stage) {
         try {
             Image logo = image;
+            this.stage = stage;
             stage.getIcons().add(logo);
         } catch (Exception e) {
             System.out.println("Erreur lors du chargement du logo : " + e.getMessage());
@@ -137,8 +138,10 @@ public class SendMailController {
                 listFile.add(fichier);
             } else {
                 System.out.println("Fichier déjà ajouté !");
+                attachmentalreadyloadedLabel.setText("Attachment already loaded");
             }
             fileLabel.setText(printListFile(listFile));
+            attachmentalreadyloadedLabel.setText("");
         }
 
     }
@@ -148,16 +151,25 @@ public class SendMailController {
         recipient = recipientTextField.getText();
         subject = subjectTextField.getText();
         body = bodyTextArea.getText();
+        System.out.println("Recipient : "+recipient+"\nSubject : "+subject+"\nBody : "+body);
         username = getUser();
         password = getPassword();
         if ((recipient.isBlank()) || (subject.isBlank()) || (body.isBlank())) {
             if (recipient.isBlank()) {
                 System.out.println("Destinataire vide");
+                contentLabel.setText("Recipient is empty...");
             }
-            if (subject.isBlank()) {
-                System.out.println("Sujet vide...");
-            } else {
-                System.out.println("Message vide...");
+            else{
+                if(subject.isBlank()) {
+                    System.out.println("Sujet vide...");
+                    contentLabel.setText("Subject is empty...");
+                } 
+                else {
+                    if (body.isBlank()){
+                        System.out.println("Message vide...");
+                        contentLabel.setText("Body is empty...");
+                    }
+                }
             }
         } else {
             // Envoie le mail encrypté
@@ -165,6 +177,11 @@ public class SendMailController {
                     password, pairingIBE, clientIBE);
             this.goMenu(event);
         }
+    }
+
+    @FXML void clearAttachment(ActionEvent event) throws IOException{
+        fileLabel.setText("");
+        listFile.clear();
     }
 
     @FXML

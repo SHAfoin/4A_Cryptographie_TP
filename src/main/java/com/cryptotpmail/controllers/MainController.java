@@ -85,6 +85,7 @@ public class MainController implements Initializable {
     public void setLogo(Stage stage) {
         try {
             Image logo = image;
+            this.stage = stage;
             stage.getIcons().add(logo);
         } catch (Exception e) {
             System.out.println("Erreur lors du chargement du logo : " + e.getMessage());
@@ -194,7 +195,7 @@ public class MainController implements Initializable {
 
                     // Boîte de dialogue pour choisir l'emplacement de sauvegarde
                     FileChooser fileChooser = new FileChooser();
-                    fileChooser.setTitle("Enregistrer la pièce jointe");
+                    fileChooser.setTitle("Save attachment");
                     fileChooser.setInitialFileName(body.getFileName()); // Nom du fichier par défaut
 
                     // Filtre pour afficher uniquement les fichiers du même type
@@ -288,7 +289,7 @@ public class MainController implements Initializable {
     // Retourne au menu principal
     @FXML
     public void logOut(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/startscene.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/cryptotpmail/startscene.fxml"));
         root = loader.load();
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setTitle("Login");
@@ -315,10 +316,10 @@ public class MainController implements Initializable {
         sendMailController.setColorBackground(color);
         // Envoi du logo
         sendMailController.setImage(image);
-        sendMailController.setLogo(stage);
         sendMailController.setClientIBE(clientIBE);
         sendMailController.setPairingIBE(pairingIBE);
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        sendMailController.setLogo(stage);
         stage.setTitle("Send Email");
         scene = new Scene(root);
         stage.setScene(scene);

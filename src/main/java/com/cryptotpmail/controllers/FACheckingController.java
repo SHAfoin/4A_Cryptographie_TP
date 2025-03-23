@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
@@ -43,6 +44,8 @@ public class FACheckingController {
     // Stocke le mail, le mot de passe
     private String username, password;
     private ClientSessionKey session;
+    //Stocke l'image du logo
+    private Image image;
 
     public void FaCheck(ActionEvent event) throws IOException {
         String otpCode = authenticationField.getText();
@@ -59,9 +62,10 @@ public class FACheckingController {
             mainController.setPassword(password);
             mainController.setClientIBE(client);
             mainController.setPairingIBE(pairingIBE);
-
+            
             // Appel de la seconde scene
             stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            mainController.setLogo(stage);
             stage.setTitle("Menu");
             scene = new Scene(root);
             stage.setScene(scene);
@@ -100,4 +104,19 @@ public class FACheckingController {
         this.password = password;
     }
 
+    // Récupère le logo de l'interface
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
+    @FXML
+    public void setLogo(Stage stage) {
+        try {
+            Image logo = image;
+            this.stage = stage;
+            stage.getIcons().add(logo);
+        } catch (Exception e) {
+            System.out.println("Erreur lors du chargement du logo : " + e.getMessage());
+        }
+    }
 }

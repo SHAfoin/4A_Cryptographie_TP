@@ -47,7 +47,7 @@ public class SendAttachmentInEmail {
       props.put("mail.smtp.starttls.enable", "true");
       props.put("mail.smtp.host", host);
       // port 25 pour le smtp "classique", 587 pour le smtp Secure
-      props.put("mail.smtp.port", "587");
+      props.put("mail.smtp.port", "25");
 
       // Crée une session
       Session session = Session.getInstance(props,

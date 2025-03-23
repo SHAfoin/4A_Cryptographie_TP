@@ -12,8 +12,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class StartController {
@@ -28,6 +30,9 @@ public class StartController {
     private Scene scene;
     @FXML
     private Parent root;
+    @FXML
+    private Label resultPasswdLabel;
+
 
 
     @FXML
@@ -41,11 +46,14 @@ public class StartController {
         }
         if (passwdUser.getText() != null & !(passwdUser.getText().trim().isEmpty())) {
             password = passwdUser.getText();
+            resultPasswdLabel.setText("Password empty...");
         }
         ClientSessionKey sessionKey = Client.sessionParameters();
         boolean auth = Client.authentification(username, password, sessionKey);
         if (!auth) {
             System.out.println("Erreur d'authentification");
+            resultPasswdLabel.setText("Password incorrect...");
+
         } else {
             System.out.println("Utilisateur : " + username + "\nMot de passe : " + password);
             System.out.println("Utilisateur connecté...");
@@ -62,6 +70,7 @@ public class StartController {
 
             // Appel de la seconde scene
             stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            faCheckingController.setLogo(stage);
             stage.setTitle("Authentication");
             scene = new Scene(root);
             stage.setScene(scene);
